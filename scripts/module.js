@@ -48,6 +48,11 @@ Hooks.once('init', async function() {
 
 Hooks.once('ready', async function() {
     console.log(`${CONFIG.name} | ready`);
+
+    game.socket.on(CONFIG.socket, (data) => {
+        console.log('SHEET SOCKET LISTEN', data);
+    });
+
     console.log(`${CONFIG.name} | ready done`);
 });
 
