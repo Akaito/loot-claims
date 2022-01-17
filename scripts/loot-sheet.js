@@ -15,7 +15,8 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
     activateListeners(html) {
-        html.find('.claim').click(this._onClaimClick.bind(this));
+        console.log('ACTIVATE LISTENERS');
+        html.find('.player-claims').click(this._onClaimClick.bind(this));
 
         super.activateListeners(html);
     }
@@ -31,10 +32,12 @@ export class SimpleLootSheet extends ActorSheet {
         }
         */
 
+        /*
         data.players = [];
         for (let player of game.users.players) {
             data.players.push(player);
         }
+        */
 
         return data;
     }
@@ -42,9 +45,11 @@ export class SimpleLootSheet extends ActorSheet {
 
     _onClaimClick(event) {
         event.preventDefault();
+        /*
         let element = event.currentTarget;
         let itemId = element.closest('.item').dataset.itemId;
         let item = this.actor.getOwnedItem(itemId);
+        */
         console.log('hi');
     }
 }
