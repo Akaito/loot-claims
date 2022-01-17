@@ -10,6 +10,28 @@ Hooks.once('init', async function() {
     console.log(`${CONFIG.name} | init`);
     //libWrapper.register('simple-loot-sheet-fvtt');
 
+    // for the server-side
+    // TODO: should this second param be async?
+    /*
+    game.socket.on(CONFIG.socket, (request, ack) => {
+        console.log('SOCKET server got the message');
+        const response = Object.merge(request, {
+            type: 'claimResponse',
+        });
+        //ack(response);
+        //game.socket.broadcast.emit(CONFIG.socket, response);
+    });
+    */
+
+    // for all other clients (not the original requester)
+    /*
+    game.socket.on(CONFIG.socket, response => {
+        // call the same response handler as the requesting client.
+        // doSomethingWithResponse(response);
+        console.log('SOCKET uninvolved client got the response');
+    });
+    */
+
     //Actors.registerSheet(CONFIG.ns, SimpleLootSheet, { makeDefault: false });
     switch (game.system.id) {
         // Add more system IDs here if the sheet is compatible with them.
