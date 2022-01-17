@@ -46,18 +46,22 @@ Hooks.once('init', async function() {
     console.log(`${CONFIG.name} | init done`);
 });
 
-Hooks.once('ready', async function() {
+Hooks.once('ready', () => {
     console.log(`${CONFIG.name} | ready`);
 
-    game.socket.on(CONFIG.socket, (data) => {
-        console.log('SHEET SOCKET LISTEN', data);
-    });
+    // GM client listens
+    if (!game.user.isGM) {
+        game.socket.on(CONFIG.socket, async (data) => {
+            console.log('SHEET SOCKET LISTEN', data);
+        });
+    }
 
     console.log(`${CONFIG.name} | ready done`);
 });
 
 
 // registerPartial was written by Lucas Straub#5006 on Foundry's Discord.
+// https://discord.com/channels/170995199584108546/670336275496042502/781764805660770315
 function registerPartial(name, path) {
     fetch(path)
     .then(function (response) {

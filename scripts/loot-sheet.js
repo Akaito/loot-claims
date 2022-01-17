@@ -89,7 +89,7 @@ export class SimpleLootSheet extends ActorSheet {
 
 
     static _onSocket(o) {
-        console.log(o);
+        console.log('sheet _onSocket', o);
     }
 
 
@@ -109,28 +109,29 @@ export class SimpleLootSheet extends ActorSheet {
         // TODO: Improve this to check all controlled, and prioritize user's assigned character.
         //       Instead of just an actor ID, get a token UUID if at all possible.
         //       Though linked actors can still get by with just an actor ID.
-        const claimantActor =
-            // players
-            game.user.data.character ||
-            // GM (and potentially players)
-            game.canvas.tokens.controlled[0];
-        console.log('claimant', claimantActor);
-        if (!claimantActor) {
+        // Note: currently gets an actor ID; would a token ID work more universally?
+        const claimantId =
+            // players use their assigned actor
+            game.actors.find(t => t.id == game.user.data.character)?.data?._id ||
+            // else, GM (and potentially players) use an arbitrary selected token they control
+            //game.canvas.tokens.controlled.find(t=>t.owner)?.id;
+            game.canvas.tokens.controlled.find(t=>t.owner)?.data?.actorId;
+        console.log('claimant', claimantId);
+        if (!claimantId) {
             console.log('No claimant available.  Tried user\'s character and a controlled token.');
             return;
         }
         // TODO: Should this be ._id instead?
-        const claimantActorId = claimantActor.data.actorId;
-        console.log('claimantActorId', claimantActorId);
+        console.log('claimantId', claimantId);
 
         // check if this is a no-op
         // claimants will be a map of claimant actor ID -> claim type
-        const hasExistingClaim = flags[claimantActorId] == claimType;
+        const hasExistingClaim = flags[claimantId] == claimType;
         if (hasExistingClaim) {
             console.log('Skipping redundant claim.');
             return;
         }
 
-        makeClaim(claimantActorId, claimType, item.uuid);
+        makeClaim(claimantId, claimType, item.uuid);
     }
 }
