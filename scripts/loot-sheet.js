@@ -46,5 +46,6 @@ export class SimpleLootSheet extends ActorSheet {
         let element = event.currentTarget;
         let itemId = element.closest('.item').dataset.itemId;
         let item = this.actor.getOwnedItem(itemId);
+        console.log('hi');
     }
 }

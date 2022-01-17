@@ -4,29 +4,31 @@ https://foundryvtt.com/api/HandlebarsHelpers.html
 <form class="{{cssClass}}" autocomplete="off">
     <table class="simple-loot-sheet-table items-list item-list inventory-list {{css}}">
         <tr>
-            <th width="100%">{{localize simplelootsheet.item}}</th>
-            <th>{{localize simplelootsheet.need}}</th>
-            <th>{{localize simplelootsheet.greed}}</th>
-            <th>{{localize simplelootsheet.pass}}</th>
+            <th>{{localize 'simplelootsheet.item'}}</th>
+            <th>{{localize 'simplelootsheet.need'}}</th>
+            <th>{{localize 'simplelootsheet.greed'}}</th>
+            <th>{{localize 'simplelootsheet.pass'}}</th>
         </tr>
 
         {{#each items as |item itemId|}}
         <tr class="item" data-item-uuid="{{item.uuid}}">
-            <td class="item-name">
-                <div class="item-image" tabindex="0" role="button" aria-label="{{item.name}}" style="background-image: url('{{item.img}}')"></div>
-                <h4>
+            <td class="item-name flexrow">
+                <div class="item-image" aria-label="{{item.name}}" style="background-image: url('{{item.img}}')"></div>
+                <!-- <img href="{{item.img}}" crossorigin="anonymous"/> -->
+                &nbsp;
+                <div>
                     {{item.name~}}
                     {{~#if item.isStack}} ({{item.data.quantity}}){{/if}}
-                </h4>
+                </div>
             </td>
 
-            <td class="claim need">
+            <td class="claim" data-claim-type="need">
                 {{> claim }}
             </td>
-            <td class="claim greed">
+            <td class="claim" data-claim-type="greed">
                 {{> claim }}
             </td>
-            <td class="claim pass">
+            <td class="claim" data-claim-type="pass">
                 {{> claim }}
             </td>
         </tr>

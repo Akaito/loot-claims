@@ -42,7 +42,7 @@ function registerPartial(name, path) {
 }
 async function preloadHandlebarsTemplates() {
     const namedTemplatePaths = {
-        claim: `modules/${CONFIG.name}/templates/player-claim.hbs`,
+        claim: `modules/${CONFIG.name}/templates/player-claims.hbs`,
     };
     for (let name in namedTemplatePaths)
         registerPartial(name, namedTemplatePaths[name]);
