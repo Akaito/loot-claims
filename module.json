@@ -19,7 +19,7 @@
       "dnd5e"
   ],
   "dependencies": [
-
+      { "name": "lib-wrapper" }
   ],
   "conflicts": [
     
