@@ -25,7 +25,9 @@
     
   ],
   "esmodules": [
-    "/scripts/module.js"
+    "/scripts/config.js",
+    "/scripts/module.js",
+    "/scripts/socket.js"
   ],
   "scripts": [
     "/scripts/lib/lib.js"
