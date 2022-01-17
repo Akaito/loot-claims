@@ -1,1 +1,1 @@
-import { MODULE } from './config.js';
+import { CONFIG } from './config.js';

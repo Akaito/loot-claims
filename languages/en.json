@@ -1,3 +1,7 @@
 {
-    "MODULE.hello": "hello"
+    "simplelootsheet.item": "Item",
+
+    "simplelootsheet.need": "Need",
+    "simplelootsheet.greed": "Greed",
+    "simplelootsheet.pass": "Pass"
 }

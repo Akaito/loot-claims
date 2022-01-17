@@ -1,5 +1,5 @@
-import { MODULE } from './config.js';
-import { LootSheet_dnd5e } from './loot-sheet.js';
+import { CONFIG } from './config.js';
+import { SimpleLootSheet } from './loot-sheet.js';
 
 /* Notes for later:
 game.socket.emit('module.<module-name>', <object>);
@@ -7,22 +7,30 @@ game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
 Hooks.once('init', async function() {
-    console.log(`${MODULE.name} | init`);
+    console.log(`${CONFIG.name} | init`);
     //libWrapper.register('simple-loot-sheet-fvtt');
 
-    Actors.registerSheet(MODULE.ns, LootSheet_dnd5e, { makeDefault: false });
+    //Actors.registerSheet(CONFIG.ns, SimpleLootSheet, { makeDefault: false });
+    switch (game.system.id) {
+        // Add more system IDs here if the sheet is compatible with them.
+        // Or add another case-break chunk to use a different sheet.
+        case 'dnd5e': {
+            Actors.registerSheet(game.system.id, SimpleLootSheet, { makeDefault: false });
+            break;
+        }
+    }
 
     preloadHandlebarsTemplates();
-    console.log(`${MODULE.name} | init done`);
+    console.log(`${CONFIG.name} | init done`);
 });
 
 Hooks.once('ready', async function() {
-    console.log(`${MODULE.name} | ready`);
-    console.log(`${MODULE.name} | ready done`);
+    console.log(`${CONFIG.name} | ready`);
+    console.log(`${CONFIG.name} | ready done`);
 });
 
 
-// This function was written by Lucas Straub#5006 on Foundry's Discord.
+// registerPartial was written by Lucas Straub#5006 on Foundry's Discord.
 function registerPartial(name, path) {
     fetch(path)
     .then(function (response) {
@@ -34,8 +42,13 @@ function registerPartial(name, path) {
 }
 async function preloadHandlebarsTemplates() {
     const namedTemplatePaths = {
-        lootSheet: `modules/${MODULE.name}/templates/loot-sheet.hbs`,
+        claim: `modules/${CONFIG.name}/templates/player-claim.hbs`,
     };
     for (let name in namedTemplatePaths)
         registerPartial(name, namedTemplatePaths[name]);
+
+    const templatePaths = [
+        `modules/${CONFIG.name}/templates/loot-sheet.hbs`,
+    ];
+    return loadTemplates(templatePaths);
 }
