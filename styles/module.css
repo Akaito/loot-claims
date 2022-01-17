@@ -1,19 +1,16 @@
-table.simple-loot-sheet-table tr :first-child {
-    /*width: 100%;*/
-    background-color: sienna;
+table.simple-loot-sheet-table .item-name {
+    width: 100%;
 }
 
 table.simple-loot-sheet-table .item-name .item-image {
     width: 36px;
-    height: 36px;
+    max-width: 36px;
+    background-size: 36px;
 }
 
 .player-claims {
     background-color: aqua;
     min-width: 32px;
-    min-height: 32px;
-    width: 100%;
-    height: 100%;
 }
 .player-claims[data-claim-type="need"] {
     background-color: red;

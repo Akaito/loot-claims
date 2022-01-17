@@ -4,10 +4,9 @@ export class SimpleLootSheet extends ActorSheet {
 
     static get defaultOptions() {
         return mergeObject(super.defaultOptions, {
-            width: 800,
-            height: 600,
+            //width: 800,
+            //height: 600,
             classes: [CONFIG.ns, 'sheet', 'actor'],
-            name: 'LOOT SHEET NAME',
         });
     }
 
