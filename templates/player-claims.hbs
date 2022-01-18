@@ -1,11 +1,6 @@
-<span>
-    {{log 'player-claims partial'}}
-    {{log .}}
-    {{log ..}}
-    {{#each flags.simple-loot-sheet-fvtt as |claimType claimantId|}}
-        {{#if (eq . claimType)}}
-            <img src="../{{item.img}}" width="24px" alt="{{claimantId}}"/>
-            {{a}} - {{b}}
-        {{/if}}
+<div class="flexrow">
+    {{#each .}}
+        {{log 'greed'}} {{log .}}
+        <img class="claimant-image" area-label="{{actorName}}" src="{{actorImg}}" data-actor-id="{{actorId}}"/>
     {{/each}}
-</span>
+<div>

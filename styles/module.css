@@ -8,14 +8,16 @@ table.simple-loot-sheet-table .item-name {
 }
 
 table.simple-loot-sheet-table .item-name .item-image {
-    width: 36px;
+    height: 36px;
     max-width: 36px;
+    max-height: 36px;
     background-size: 36px;
 }
 
 table.simple-loot-sheet-table .claimant-image {
-    width: 36px;
+    height: 36px;
     max-width: 36px;
+    max-height: 36px;
 }
 
 .player-claims {

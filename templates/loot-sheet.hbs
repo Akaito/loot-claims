@@ -28,21 +28,15 @@
                 </td>
 
                 <td class="player-claims" data-claim-type="need">
-                    {{#each needs}}
-                        {{log 'need'}} {{log .}}
-                        <!-- <div class="claimant-image" aria-label="{{actorName}}" style="background-image: url('{{actorImg}}')"></div> -->
-                        <img class="claimant-image" area-label="{{actorName}}" src="{{actorImg}}" data-actor-id="{{actorId}}"/>
-                    {{/each}}
+                    {{> claim needs }}
                 </td>
 
                 <td class="player-claims" data-claim-type="greed">
-                    {{#each greeds}}
-                        {{log 'greed'}} {{log .}}
-                        <img class="claimant-image" area-label="{{actorName}}" src="{{actorImg}}" data-actor-id="{{actorId}}"/>
-                    {{/each}}
+                    {{> claim greeds }}
                 </td>
 
                 <td class="player-claims" data-claim-type="pass">
+                    <div></div>
                 </td>
             </tr>
         {{/each}}

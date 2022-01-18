@@ -140,12 +140,13 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
 
-    _onClaimClick(event) {
+    async _onClaimClick(event) {
         event.preventDefault();
-        let element = event.currentTarget;
-        let itemId = element.closest('.item').dataset.itemId;
+        const element = event.currentTarget;
+        const itemUuid = element.closest('.item').dataset.itemUuid;
         //let item = this.actor.getOwnedItem(itemId);
-        let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
+        //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
+        let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
         let flags = item.getFlag(CONFIG.name, CONFIG.claimsKey) || {};
         console.log('item', item);
