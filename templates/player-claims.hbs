@@ -1,1 +1,11 @@
-<span>&nbsp;</span>
+<span>
+    {{log 'player-claims partial'}}
+    {{log .}}
+    {{log ..}}
+    {{#each flags.simple-loot-sheet-fvtt as |claimType claimantId|}}
+        {{#if (eq . claimType)}}
+            <img src="../{{item.img}}" width="24px" alt="{{claimantId}}"/>
+            {{a}} - {{b}}
+        {{/if}}
+    {{/each}}
+</span>

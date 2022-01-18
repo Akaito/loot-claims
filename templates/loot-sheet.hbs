@@ -10,17 +10,23 @@
             <th>{{localize 'simplelootsheet.pass'}}</th>
         </tr>
 
-        {{#each items as |item itemId|}}
+        {{log 'loot-sheet.hbs .'}}
+        {{log .}}
+        {{#each items as |item itemId|}} <!-- note this itemId is 0, 1, 2, etc. -->
         <tr class="item" data-item-id="{{item._id}}">
             <td class="item-name flexrow">
                 <div class="item-image" aria-label="{{item.name}}" style="background-image: url('{{item.img}}')"></div>
-                <!-- <img href="{{item.img}}" crossorigin="anonymous"/> -->
+                <!-- <img src="{{item.img}}" crossorigin="anonymous"/> -->
                 &nbsp;
                 <div>
                     {{item.name~}}
                     {{~#if item.isStack}} ({{item.data.quantity}}){{/if}}
                 </div>
             </td>
+
+            {{#each ../claims }}
+                {{uuid}}++{{name}}
+            {{/each}}
 
             <td class="player-claims" data-claim-type="need">
                 {{> claim }}

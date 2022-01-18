@@ -3,6 +3,9 @@ export const CONFIG = {
     ns: 'simplelootsheet',
     socket: 'module.simple-loot-sheet-fvtt',
 
-    claimCategories: ['need','greed','pass'],
-    claimCategoryNames: ['simplelootsheet.need', 'simplelootsheet.greed', 'simplelootsheet.pass'],
+    claimsKey: 'claims',
+    needKey: 'need',
+    greedKey: 'greed',
+    //claimCategories: ['need','greed','pass'],
+    //claimCategoryNames: ['simplelootsheet.need', 'simplelootsheet.greed', 'simplelootsheet.pass'],
 };

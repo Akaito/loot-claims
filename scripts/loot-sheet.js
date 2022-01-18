@@ -6,8 +6,7 @@ import { CONFIG } from './config.js';
 /// - https://discord.com/channels/170995199584108546/903652184003055677/903693659051008040
 /// - https://discord.com/channels/170995199584108546/811676497965613117/903652184003055677
 /// - https://discord.com/channels/170995199584108546/670336275496042502/835549329598840903
-/*async*/ function makeClaim(claimantActorId, claimType, itemUuid) {
-    console.log('makeClaim() called');
+async function makeClaim(claimantActorId, claimType, itemUuid) {
     /*
     return new Promise(resolve => {
         const requestData = {
@@ -30,12 +29,22 @@ import { CONFIG } from './config.js';
     */
 
     console.log(claimantActorId, claimType, itemUuid);
-    game.socket.emit(CONFIG.socket, {
+    /*
+    console.log('emit', game.socket.emit(CONFIG.socket, {
         type: 'claimRequest',
         claimType,
         claimantActorId,
         itemUuid,
-    });
+    }));
+    */
+
+    // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
+    // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
+    // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
+    // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
+    let item = await fromUuid(itemUuid);
+    console.log('item being claimed', item);
+    item.setFlag(CONFIG.name, claimantActorId, claimType);
 }
 
 export class SimpleLootSheet extends ActorSheet {
@@ -70,6 +79,35 @@ export class SimpleLootSheet extends ActorSheet {
         let data = super.getData();
         data.CONFIG = CONFIG;
 
+        // Add claims data in a different layout for the sake of Handlebars templating.
+        data.claims = {};
+        for (let item of this.actor.items) {
+            console.log('item for hbs layout', item);
+            const flags = item.data.flags[CONFIG.name];
+            console.log('item flags', flags);
+            if (!flags) continue;
+
+            let needs = [];
+            let greeds = [];
+            for (const key of Object.keys(flags)) {
+                const value = flags[key];
+                switch (value) {
+                    case CONFIG.needKey: needs.push(key); break;
+                    case CONFIG.greedKey: greeds.push(key); break;
+                }
+            }
+
+            data.claims[item.uuid] = {
+                uuid: item.uuid,
+                name: item.name,
+                img: item.img,
+                needs,
+                greeds,
+            };
+        }
+
+        console.log('CLAIMS laid out for hbs', data.claims);
+
         /*
         let flags = this.actor.data.flags[`${CONFIG.ns}`];
         if (flags) {
@@ -100,7 +138,7 @@ export class SimpleLootSheet extends ActorSheet {
         //let item = this.actor.getOwnedItem(itemId);
         let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
-        let flags = item.getFlag(CONFIG.name, 'claims') || {};
+        let flags = item.getFlag(CONFIG.name, CONFIG.claimsKey) || {};
         console.log('item', item);
         console.log('flags', flags);
 

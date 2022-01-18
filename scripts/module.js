@@ -50,9 +50,18 @@ Hooks.once('ready', () => {
     console.log(`${CONFIG.name} | ready`);
 
     // GM client listens
-    if (!game.user.isGM) {
+    if (game.user.isGM) {
         game.socket.on(CONFIG.socket, async (data) => {
-            console.log('SHEET SOCKET LISTEN', data);
+            //if (!data || !data.hasOwnProperty('type')) return;
+
+            console.log('MODULE SOCKET LISTEN - GM', data);
+        });
+    }
+    else {
+        game.socket.on(CONFIG.socket, async (data) => {
+            //if (!data || !data.hasOwnProperty('type')) return;
+
+            console.log('MODULE SOCKET LISTEN', data);
         });
     }
 
