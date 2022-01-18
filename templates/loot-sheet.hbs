@@ -12,32 +12,39 @@
 
         {{log 'loot-sheet.hbs .'}}
         {{log .}}
-        {{#each items as |item itemId|}} <!-- note this itemId is 0, 1, 2, etc. -->
-        <tr class="item" data-item-id="{{item._id}}">
-            <td class="item-name flexrow">
-                <div class="item-image" aria-label="{{item.name}}" style="background-image: url('{{item.img}}')"></div>
-                <!-- <img src="{{item.img}}" crossorigin="anonymous"/> -->
-                &nbsp;
-                <div>
-                    {{item.name~}}
-                    {{~#if item.isStack}} ({{item.data.quantity}}){{/if}}
-                </div>
-            </td>
 
-            {{#each ../claims }}
-                {{uuid}}++{{name}}
-            {{/each}}
+        {{#each claims }}
+            {{log 'claim'}} {{log .}}
+            <tr class="item" data-item-uuid="{{uuid}}">
+                <td class="item-name flexrow">
+                    <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div>
+                    <!-- <img class="item-image" src="{{img}}" crossorigin="anonymous"/> -->
+                    <!-- {{uuid}}++{{name}} -->
+                    &nbsp;
+                    <div>
+                        {{name~}}
+                        {{~#if isStack}} ({{quantity}}){{/if}}
+                    </div>
+                </td>
 
-            <td class="player-claims" data-claim-type="need">
-                {{> claim }}
-            </td>
-            <td class="player-claims" data-claim-type="greed">
-                {{> claim }}
-            </td>
-            <td class="player-claims" data-claim-type="pass">
-                {{> claim }}
-            </td>
-        </tr>
+                <td class="player-claims" data-claim-type="need">
+                    {{#each needs}}
+                        {{log 'need'}} {{log .}}
+                        <!-- <div class="claimant-image" aria-label="{{actorName}}" style="background-image: url('{{actorImg}}')"></div> -->
+                        <img class="claimant-image" area-label="{{actorName}}" src="{{actorImg}}" data-actor-id="{{actorId}}"/>
+                    {{/each}}
+                </td>
+
+                <td class="player-claims" data-claim-type="greed">
+                    {{#each greeds}}
+                        {{log 'greed'}} {{log .}}
+                        <img class="claimant-image" area-label="{{actorName}}" src="{{actorImg}}" data-actor-id="{{actorId}}"/>
+                    {{/each}}
+                </td>
+
+                <td class="player-claims" data-claim-type="pass">
+                </td>
+            </tr>
         {{/each}}
 
     </table>

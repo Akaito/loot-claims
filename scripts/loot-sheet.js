@@ -82,28 +82,37 @@ export class SimpleLootSheet extends ActorSheet {
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
         for (let item of this.actor.items) {
+            data.claims[item.uuid] = {
+                uuid: item.uuid,
+                name: item.name,
+                img: item.img,
+                isStack: item.isStack,
+                quantity: item.data.quantity,
+                needs: [],
+                greeds: [],
+            };
             console.log('item for hbs layout', item);
             const flags = item.data.flags[CONFIG.name];
             console.log('item flags', flags);
             if (!flags) continue;
 
-            let needs = [];
-            let greeds = [];
             for (const key of Object.keys(flags)) {
                 const value = flags[key];
+                let actor = game.actors.get(key);
+                if (!actor) {
+                    console.log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
+                    continue;
+                }
+                let claimant = {
+                    actorId: key,
+                    actorName: actor.name,
+                    actorImg: actor.img,
+                };
                 switch (value) {
-                    case CONFIG.needKey: needs.push(key); break;
-                    case CONFIG.greedKey: greeds.push(key); break;
+                    case CONFIG.needKey: data.claims[item.uuid].needs.push(claimant); break;
+                    case CONFIG.greedKey: data.claims[item.uuid].greeds.push(claimant); break;
                 }
             }
-
-            data.claims[item.uuid] = {
-                uuid: item.uuid,
-                name: item.name,
-                img: item.img,
-                needs,
-                greeds,
-            };
         }
 
         console.log('CLAIMS laid out for hbs', data.claims);

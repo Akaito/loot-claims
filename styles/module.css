@@ -1,3 +1,8 @@
+table.simple-loot-sheet-table .tr {
+    height: 36px;
+    max-height: 36px;
+}
+
 table.simple-loot-sheet-table .item-name {
     width: 100%;
 }
@@ -6,6 +11,11 @@ table.simple-loot-sheet-table .item-name .item-image {
     width: 36px;
     max-width: 36px;
     background-size: 36px;
+}
+
+table.simple-loot-sheet-table .claimant-image {
+    width: 36px;
+    max-width: 36px;
 }
 
 .player-claims {
