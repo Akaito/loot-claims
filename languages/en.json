@@ -1,7 +1,7 @@
 {
     "simplelootsheet.item": "Item",
 
-    "simplelootsheet.need": "Need",
-    "simplelootsheet.greed": "Greed",
-    "simplelootsheet.pass": "Pass"
+    "simplelootsheet.need": "Will Use",
+    "simplelootsheet.greed": "Can Carry",
+    "simplelootsheet.pass": "Meh"
 }
