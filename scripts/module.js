@@ -29,8 +29,6 @@ async function handleSocketGm(message, userSenderId) {
             break;
         }
     }
-
-    ack("foo");
 }
 
 function handleSocket(message, senderUserId) {
