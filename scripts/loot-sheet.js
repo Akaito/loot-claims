@@ -38,13 +38,24 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
     }));
     */
 
-    // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
-    // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
-    // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
-    // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
-    let item = await fromUuid(itemUuid);
-    console.log('item being claimed', item);
-    item.setFlag(CONFIG.name, claimantActorId, claimType);
+    if (game.user.isGM) {
+        // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
+        // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
+        // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
+        // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
+        let item = await fromUuid(itemUuid);
+        console.log('item being claimed', item);
+        item.setFlag(CONFIG.name, claimantActorId, claimType);
+    }
+    else {
+        ui.notifications.warn("Sending claim request...");
+        new Promise(resolve => {
+            socket.emit(CONFIG.socket, "I'm a request", response => {
+                ui.notifications.warn("Got request response!");
+                resolve(response);
+            });
+        });
+    }
 }
 
 export class SimpleLootSheet extends ActorSheet {

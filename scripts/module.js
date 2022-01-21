@@ -6,6 +6,14 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
+function socketTest(request, ack) {
+    console.log("IT'S WORKING!");
+    const response = "h'lo";
+    ui.notifications.info("IT'S WORKING!");
+    ack(response);
+    socket.broadcast.emit(CONFIG.socket, response);
+}
+
 Hooks.once('init', async function() {
     console.log(`${CONFIG.name} | init`);
     //libWrapper.register('simple-loot-sheet-fvtt');
@@ -49,6 +57,12 @@ Hooks.once('init', async function() {
 Hooks.once('ready', () => {
     console.log(`${CONFIG.name} | ready`);
 
+    // TODO: What happens if there's more than one GM user active?
+    if (game.user.isGM) {
+        socket.on(CONFIG.socket, socketTest);
+    }
+
+    /*
     // GM client listens
     if (game.user.isGM) {
         game.socket.on(CONFIG.socket, async (data) => {
@@ -64,6 +78,7 @@ Hooks.once('ready', () => {
             console.log('MODULE SOCKET LISTEN', data);
         });
     }
+    */
 
     console.log(`${CONFIG.name} | ready done`);
 });
