@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { iamResponsibleGM, handleSocketGm } from './module.js';
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
@@ -9,17 +10,17 @@ import { CONFIG } from './config.js';
 async function makeClaim(claimantActorId, claimType, itemUuid) {
     console.log('makeClaim()', claimantActorId, claimType, itemUuid);
 
+    const message = {
+        type: CONFIG.messageTypes.CLAIM_REQUEST,
+        claimType,
+        claimantActorId,
+        itemUuid,
+    };
+    // TODO: Make this true only if we're the responsible GM.  Not just any GM.
     if (game.user.isGM) {
-        // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
-        // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
-        // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
-        // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
-        let item = await fromUuid(itemUuid);
-        console.log('item being claimed', item);
-        item.setFlag(CONFIG.name, claimantActorId, claimType);
+        await handleSocketGm(message, game.user.data._id);
     }
     else {
-
         new Promise(resolve => {
             const message = {
                 type: CONFIG.messageTypes.CLAIM_REQUEST,
@@ -27,9 +28,10 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
                 claimantActorId,
                 itemUuid,
             };
+            // TODO: Move response to a function above this scope, so the GM user can call it, too?
             socket.emit(CONFIG.socket, message, response => {
-                    console.log('GOT A REQUEST RESPONSE!');
-                    console.log(response);
+                    //console.log('GOT A REQUEST RESPONSE!');
+                    //console.log(response);
                     ui.notifications.warn("Got request response!");
                     resolve(response);
                 }
@@ -54,6 +56,7 @@ export class SimpleLootSheet extends ActorSheet {
 
     activateListeners(html) {
         html.find('.player-claims').click(this._onClaimClick.bind(this));
+        html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
 
         super.activateListeners(html);
     }
@@ -63,6 +66,7 @@ export class SimpleLootSheet extends ActorSheet {
         data.CONFIG = CONFIG;
 
         data.isGM = game.user.isGM;
+        data.iamResponsibleGM = iamResponsibleGM();
 
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
@@ -76,16 +80,16 @@ export class SimpleLootSheet extends ActorSheet {
                 needs: [],
                 greeds: [],
             };
-            console.log('item for hbs layout', item);
+            //console.log('item for hbs layout', item);
             const flags = item.data.flags[CONFIG.name];
-            console.log('item flags', flags);
+            //console.log('item flags', flags);
             if (!flags) continue;
 
             for (const key of Object.keys(flags)) {
                 const value = flags[key];
                 let actor = game.actors.get(key);
                 if (!actor) {
-                    console.log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
+                    //console.log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
                     continue;
                 }
                 let claimant = {
@@ -100,13 +104,8 @@ export class SimpleLootSheet extends ActorSheet {
             }
         }
 
-        console.log('CLAIMS laid out for hbs', data.claims);
+        //console.log('CLAIMS laid out for hbs', data.claims);
         return data;
-    }
-
-
-    static _onSocket(o) {
-        console.log('sheet _onSocket', o);
     }
 
 
@@ -119,8 +118,8 @@ export class SimpleLootSheet extends ActorSheet {
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
         let flags = item.getFlag(CONFIG.name, CONFIG.claimsKey) || {};
-        console.log('item', item);
-        console.log('flags', flags);
+        //console.log('item', item);
+        //console.log('flags', flags);
 
         const claimType = element.closest('.player-claims').dataset.claimType;
 
@@ -134,22 +133,35 @@ export class SimpleLootSheet extends ActorSheet {
             // else, GM (and potentially players) use an arbitrary selected token they control
             //game.canvas.tokens.controlled.find(t=>t.owner)?.id;
             game.canvas.tokens.controlled.find(t=>t.owner)?.data?.actorId;
-        console.log('claimant', claimantId);
+        //console.log('claimant', claimantId);
         if (!claimantId) {
-            console.log('No claimant available.  Tried user\'s character and a controlled token.');
+            //console.log('No claimant available.  Tried user\'s character and a controlled token.');
             return;
         }
         // TODO: Should this be ._id instead?
-        console.log('claimantId', claimantId);
+        //console.log('claimantId', claimantId);
 
         // check if this is a no-op
         // claimants will be a map of claimant actor ID -> claim type
         const hasExistingClaim = flags[claimantId] == claimType;
         if (hasExistingClaim) {
-            console.log('Skipping redundant claim.');
+            //console.log('Skipping redundant claim.');
             return;
         }
 
         makeClaim(claimantId, claimType, item.uuid);
+    }
+
+    async _onDistributeLootClick(event) {
+        if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+        if (!iamResponsibleGm) {
+            ui.notifications.error("Only the arbitrarily-chosen responsible GM can distribute loot.");
+            return;
+        }
+
+        event.preventDefault();
+        const element = event.currentTarget;
+        const actor = this.actor;
+        //console.log(actor);
     }
 }

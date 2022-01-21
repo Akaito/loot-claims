@@ -5,7 +5,7 @@
 
     {{#if isGM}}
     <div>
-        GM
+        <button class="distribute-loot">{{localize 'simplelootsheet.distributeLoot'}}</button>
     </div>
     {{/if}}
 
@@ -17,11 +17,7 @@
             <!-- <th>{{localize 'simplelootsheet.pass'}}</th> -->
         </tr>
 
-        {{log 'loot-sheet.hbs .'}}
-        {{log .}}
-
         {{#each claims }}
-            {{log 'claim'}} {{log .}}
             <tr class="item" data-item-uuid="{{uuid}}">
                 <td class="item-brief">
                     <!-- <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div> -->

@@ -6,32 +6,54 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
-async function handleSocketGm(message, userSenderId) {
-    // Not a GM?  Do nothing.
+/// Just need a single GM; doesn't matter who.  So find the active GM user with the lowest ID.
+export function whoisResponsibleGM() {
+    return game.users
+        .filter(user => user.isGM && user.active)
+        .reduce((prev, curr) => prev.id < curr.id ? prev : curr);
+}
+
+/// Am I a GM, and there exist no other active GMs with a lower ID than mine?
+export function iamResponsibleGM() {
+    return game.user.isGM &&
+        whoisResponsibleGM().id == game.user.id;
+}
+
+export async function handleSocketGm(message, userSenderId) {
+    console.log('handleSocketGm()');
     console.log('Got a socket event:', message);
     console.log('With userSenderId:', userSenderId);
-    if (!game.user.isGM) return;
-    console.log("  I'm a GM");
-    // If there are no other GMs with a higher ID than ours, then we're the responsible GM.
-    // TODO: Does this work equally well with assistant GMs around?
-    const isResponsibleGM = !game.users
-        .filter(user => user.isGM && user.active)
-        .some(other => other.data._id < game.user.data._id);
-    if (!isResponsibleGM) return;
+    console.log('responsible GM is', whoisResponsibleGM());
+    if (!iamResponsibleGM()) return;
     console.log("  I'm the responsible GM");
 
     switch (message.type) {
+        // Set claim to the specified value, or clear it if they're the same.
         case CONFIG.messageTypes.CLAIM_REQUEST: {
             const {claimType, claimantActorId, itemUuid} = message;
             let item = await fromUuid(itemUuid);
             console.log('item being claimed', item);
-            item.setFlag(CONFIG.name, claimantActorId, claimType);
+
+            // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
+            // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
+            // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
+            // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
+            if (item.getFlag(CONFIG.name, claimantActorId) == claimType) {
+                console.log('UNSET claim');
+                //await item.unsetFlag(CONFIG.name, claimantActorId);  // Exists.  Does nothing.
+                item.setFlag(CONFIG.name, claimantActorId, CONFIG.passKey);
+            }
+            else {
+                console.log('SET claim');
+                item.setFlag(CONFIG.name, claimantActorId, claimType);
+            }
             break;
         }
     }
 }
 
 function handleSocket(message, senderUserId) {
+    console.log('handleSocket() (non-GM)');
     console.log("IT'S WORKING!");
     console.log('message', message);
     console.log('sender user ID', senderUserId);

@@ -3,5 +3,7 @@
 
     "simplelootsheet.need": "Will Use",
     "simplelootsheet.greed": "Can Carry",
-    "simplelootsheet.pass": "Meh"
+    "simplelootsheet.pass": "Meh",
+
+    "simplelootsheet.distributeLoot": "Dist. Loot"
 }
