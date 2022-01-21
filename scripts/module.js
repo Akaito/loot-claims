@@ -6,17 +6,17 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
-function handleSocket(event) {
+function handleSocket(event, senderUserId, ack) {
     // Not a GM?  Do nothing.
-    console.log('Got a socket event', event);
+    console.log('Got a socket event:', event);
+    console.log('With senderUserId:', senderUserId);
     if (!game.user.isGM) return;
     console.log("  I'm a GM");
-    // Not the primary GM?  Do nothing.
-    const gms = game.users
-        .filter(user => user.isGM && user.active);
-    // If we're the only GM, or we're the one with the highest ID, we're responsible.
-    const isResponsibleGM = gms.length === 1 ||
-        gms.some(other => other.data._id < game.user.data._id);
+    // If there are no other GMs with a higher ID than ours, then we're the responsible GM.
+    // TODO: Does this work equally well with assistant GMs around?
+    const isResponsibleGM = !game.users
+        .filter(user => user.isGM && user.active)
+        .some(other => other.data._id < game.user.data._id);
     if (!isResponsibleGM) return;
     console.log("  I'm the responsible GM");
 
@@ -24,8 +24,9 @@ function handleSocket(event) {
     console.log(event);
     const response = "h'lo";
     ui.notifications.info("IT'S WORKING!");
-    ack(response);
-    socket.broadcast.emit(CONFIG.socket, response);
+    //socket.ack(response);
+    //socket.broadcast.emit(CONFIG.socket, response);
+    socket.emit(CONFIG.socket, response);
 }
 
 Hooks.once('init', async function() {

@@ -49,13 +49,23 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
     }
     else {
         ui.notifications.warn("Sending claim request...");
-        await new Promise(resolve => {
+        new Promise(resolve => {
+
             socket.emit(CONFIG.socket, "I'm a request", response => {
                 console.log('GOT A REQUEST RESPONSE!');
-                console.log(res);
+                console.log(response);
                 ui.notifications.warn("Got request response!");
                 resolve(response);
             });
+
+            /*
+            const ackCb = response => {
+                console.log('Ack callback called!');
+                ui.notifications.info('Ack callback called!');
+                resolve(response);
+            };
+            socket.emit(CONFIG.socket, "I'm a request", ackCb);
+            */
         });
     }
 }
