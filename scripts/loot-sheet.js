@@ -91,6 +91,8 @@ export class SimpleLootSheet extends ActorSheet {
         let data = super.getData();
         data.CONFIG = CONFIG;
 
+        data.isGM = game.user.isGM;
+
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
         for (let item of this.actor.items) {

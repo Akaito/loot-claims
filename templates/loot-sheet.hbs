@@ -2,6 +2,13 @@
     <!-- Notes for later
     https://foundryvtt.com/api/HandlebarsHelpers.html
     -->
+
+    {{#if isGM}}
+    <div>
+        GM
+    </div>
+    {{/if}}
+
     <table class="simple-loot-sheet-table items-list item-list inventory-list {{css}}">
         <tr>
             <th>{{localize 'simplelootsheet.item'}}</th>
