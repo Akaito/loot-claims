@@ -2,39 +2,62 @@
     --simple-loot-sheet-img-size: 36px;
 }
 
-table.simple-loot-sheet-table tr {
-    height: 36px;
-    max-height: 36px;
+.simple-loot-sheet-table tr {
+    height: var(--simple-loot-sheet-img-size);
+    min-height: var(--simple-loot-sheet-img-size);
+    max-height: var(--simple-loot-sheet-img-size);
 }
 
 /* All non-first columns in the table.  (td that must be following a td, both children of a table.<class>. */
-table.simple-loot-sheet-table td + td {
+.simple-loot-sheet-table td + td {
     border-left: 1px solid var(--color-border-dark-primary);
 }
 
-table.simple-loot-sheet-table td {
+.simple-loot-sheet-table td {
     text-align: left;
-    vertical-align: center;
-    width: 30%;
+    vertical-align: middle;
+    width: 33%;
+}
+.simple-loot-sheet-table td > * {
+    min-height: var(--simple-loot-sheet-img-size);
+    vertical-align: middle;
 }
 
-table.simple-loot-sheet-table .item-image, .claimant-image {
-    border: 0;
+.simple-loot-sheet-table img {
+    border-style: none;
+}
+
+.simple-loot-sheet-table .player-claims {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.simple-loot-sheet-table .player-claims * {
+    margin: 0 auto;
+}
+
+.simple-loot-sheet-table .claimant-image,img {
     width: var(--simple-loot-sheet-img-size);
     height: var(--simple-loot-sheet-img-size);
+    min-width: var(--simple-loot-sheet-img-size);
+    min-height: var(--simple-loot-sheet-img-size);
     max-width: var(--simple-loot-sheet-img-size);
     max-height: var(--simple-loot-sheet-img-size);
     background-size: var(--simple-loot-sheet-img-size);
+    vertical-align: middle;
+    align-self: center;
 }
 
-table.simple-loot-sheet-table .item-name {
-    /* width: 30%; */
+.simple-loot-sheet-table .item-brief > element {
+    margin-right: 1em;
 }
-
-table.simple-loot-sheet-table .item-name .item-image {
+.simple-loot-sheet-table .item-brief div {
+    display: inline;
+    min-height: var(--simple-loot-sheet-img-size);
 }
-
-table.simple-loot-sheet-table .claimant-image {
+.simple-loot-sheet-table .item-brief .item-name {
+    height: 100%;
+    vertical-align: middle;
 }
 
 .player-claims {
