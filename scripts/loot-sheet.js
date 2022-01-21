@@ -7,36 +7,7 @@ import { CONFIG } from './config.js';
 /// - https://discord.com/channels/170995199584108546/811676497965613117/903652184003055677
 /// - https://discord.com/channels/170995199584108546/670336275496042502/835549329598840903
 async function makeClaim(claimantActorId, claimType, itemUuid) {
-    /*
-    return new Promise(resolve => {
-        const requestData = {
-            type: 'claimRequest',
-            claimType,
-            claimantActorId,
-            itemUuid,
-        };
-        game.socket.emit(
-            CONFIG.socket,
-            requestData,
-            responseData => {
-                console.log('RESOLVED EMIT!!', responseData);
-                //resolve(responseData);
-                // call the same response handler as uninvolved clients.
-                // doSomethingWithResponse(response);
-            });
-        console.log('SOCKET sent a request');
-    });
-    */
-
-    console.log(claimantActorId, claimType, itemUuid);
-    /*
-    console.log('emit', game.socket.emit(CONFIG.socket, {
-        type: 'claimRequest',
-        claimType,
-        claimantActorId,
-        itemUuid,
-    }));
-    */
+    console.log('makeClaim()', claimantActorId, claimType, itemUuid);
 
     if (game.user.isGM) {
         // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
@@ -48,8 +19,8 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
         item.setFlag(CONFIG.name, claimantActorId, claimType);
     }
     else {
-        new Promise(resolve => {
 
+        new Promise(resolve => {
             const message = {
                 type: CONFIG.messageTypes.CLAIM_REQUEST,
                 claimType,
@@ -130,21 +101,6 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         console.log('CLAIMS laid out for hbs', data.claims);
-
-        /*
-        let flags = this.actor.data.flags[`${CONFIG.ns}`];
-        if (flags) {
-            // TODO: loop through, pushing player claim data into the local data object
-        }
-        */
-
-        /*
-        data.players = [];
-        for (let player of game.users.players) {
-            data.players.push(player);
-        }
-        */
-
         return data;
     }
 
