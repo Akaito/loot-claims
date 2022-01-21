@@ -49,8 +49,10 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
     }
     else {
         ui.notifications.warn("Sending claim request...");
-        new Promise(resolve => {
+        await new Promise(resolve => {
             socket.emit(CONFIG.socket, "I'm a request", response => {
+                console.log('GOT A REQUEST RESPONSE!');
+                console.log(res);
                 ui.notifications.warn("Got request response!");
                 resolve(response);
             });

@@ -6,8 +6,22 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
-function socketTest(request, ack) {
+function handleSocket(event) {
+    // Not a GM?  Do nothing.
+    console.log('Got a socket event', event);
+    if (!game.user.isGM) return;
+    console.log("  I'm a GM");
+    // Not the primary GM?  Do nothing.
+    const gms = game.users
+        .filter(user => user.isGM && user.active);
+    // If we're the only GM, or we're the one with the highest ID, we're responsible.
+    const isResponsibleGM = gms.length === 1 ||
+        gms.some(other => other.data._id < game.user.data._id);
+    if (!isResponsibleGM) return;
+    console.log("  I'm the responsible GM");
+
     console.log("IT'S WORKING!");
+    console.log(event);
     const response = "h'lo";
     ui.notifications.info("IT'S WORKING!");
     ack(response);
@@ -57,10 +71,7 @@ Hooks.once('init', async function() {
 Hooks.once('ready', () => {
     console.log(`${CONFIG.name} | ready`);
 
-    // TODO: What happens if there's more than one GM user active?
-    if (game.user.isGM) {
-        socket.on(CONFIG.socket, socketTest);
-    }
+    socket.on(CONFIG.socket, handleSocket);
 
     /*
     // GM client listens
