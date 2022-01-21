@@ -48,24 +48,21 @@ async function makeClaim(claimantActorId, claimType, itemUuid) {
         item.setFlag(CONFIG.name, claimantActorId, claimType);
     }
     else {
-        ui.notifications.warn("Sending claim request...");
         new Promise(resolve => {
 
-            socket.emit(CONFIG.socket, "I'm a request", response => {
-                console.log('GOT A REQUEST RESPONSE!');
-                console.log(response);
-                ui.notifications.warn("Got request response!");
-                resolve(response);
-            });
-
-            /*
-            const ackCb = response => {
-                console.log('Ack callback called!');
-                ui.notifications.info('Ack callback called!');
-                resolve(response);
+            const message = {
+                type: CONFIG.messageTypes.CLAIM_REQUEST,
+                claimType,
+                claimantActorId,
+                itemUuid,
             };
-            socket.emit(CONFIG.socket, "I'm a request", ackCb);
-            */
+            socket.emit(CONFIG.socket, message, response => {
+                    console.log('GOT A REQUEST RESPONSE!');
+                    console.log(response);
+                    ui.notifications.warn("Got request response!");
+                    resolve(response);
+                }
+            );
         });
     }
 }
@@ -89,14 +86,6 @@ export class SimpleLootSheet extends ActorSheet {
 
         super.activateListeners(html);
     }
-
-    /*
-    activateSocketListeners() {
-        game.socket.on(CONFIG.socket, (data) => {
-            console.log('SHEET SOCKET LISTEN', data);
-        });
-    }
-    */
 
     getData() {
         let data = super.getData();

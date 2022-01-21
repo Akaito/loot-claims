@@ -6,10 +6,10 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
-function handleSocket(event, senderUserId, ack) {
+async function handleSocketGm(message, userSenderId) {
     // Not a GM?  Do nothing.
-    console.log('Got a socket event:', event);
-    console.log('With senderUserId:', senderUserId);
+    console.log('Got a socket event:', message);
+    console.log('With userSenderId:', userSenderId);
     if (!game.user.isGM) return;
     console.log("  I'm a GM");
     // If there are no other GMs with a higher ID than ours, then we're the responsible GM.
@@ -20,10 +20,24 @@ function handleSocket(event, senderUserId, ack) {
     if (!isResponsibleGM) return;
     console.log("  I'm the responsible GM");
 
+    switch (message.type) {
+        case CONFIG.messageTypes.CLAIM_REQUEST: {
+            const {claimType, claimantActorId, itemUuid} = message;
+            let item = await fromUuid(itemUuid);
+            console.log('item being claimed', item);
+            item.setFlag(CONFIG.name, claimantActorId, claimType);
+            break;
+        }
+    }
+
+    ack("foo");
+}
+
+function handleSocket(message, senderUserId) {
     console.log("IT'S WORKING!");
-    console.log(event);
+    console.log('message', message);
+    console.log('sender user ID', senderUserId);
     const response = "h'lo";
-    ui.notifications.info("IT'S WORKING!");
     //socket.ack(response);
     //socket.broadcast.emit(CONFIG.socket, response);
     socket.emit(CONFIG.socket, response);
@@ -72,7 +86,10 @@ Hooks.once('init', async function() {
 Hooks.once('ready', () => {
     console.log(`${CONFIG.name} | ready`);
 
-    socket.on(CONFIG.socket, handleSocket);
+    if (game.user.isGM)
+        socket.on(CONFIG.socket, handleSocketGm);
+    else
+        socket.on(CONFIG.socket, handleSocket);
 
     /*
     // GM client listens

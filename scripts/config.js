@@ -3,7 +3,9 @@ export const CONFIG = {
     ns: 'simplelootsheet',
 
     socket: 'module.simple-loot-sheet-fvtt',
-    claimRequestEventName: 'make-claim',
+    messageTypes: {
+        CLAIM_REQUEST: 'claim-request',
+    },
 
     claimsKey: 'claims',
     needKey: 'need',
