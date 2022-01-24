@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { iamResponsibleGM, handleSocketGm } from './module.js';
+import { MODULE_CONFIG } from './config.js';
+import { claimFlagFromUuid, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
@@ -7,29 +7,23 @@ import { iamResponsibleGM, handleSocketGm } from './module.js';
 /// - https://discord.com/channels/170995199584108546/903652184003055677/903693659051008040
 /// - https://discord.com/channels/170995199584108546/811676497965613117/903652184003055677
 /// - https://discord.com/channels/170995199584108546/670336275496042502/835549329598840903
-async function makeClaim(claimantActorId, claimType, itemUuid) {
-    console.log('makeClaim()', claimantActorId, claimType, itemUuid);
+async function makeClaim(claimantUuid, claimType, itemUuid) {
+    console.log('makeClaim()', claimantUuid, claimType, itemUuid);
 
     const message = {
-        type: CONFIG.messageTypes.CLAIM_REQUEST,
+        type: MODULE_CONFIG.messageTypes.CLAIM_REQUEST,
         claimType,
-        claimantActorId,
+        claimantUuid,
         itemUuid,
     };
     // TODO: Make this true only if we're the responsible GM.  Not just any GM.
-    if (game.user.isGM) {
+    if (iamResponsibleGM()) {
         await handleSocketGm(message, game.user.data._id);
     }
     else {
         new Promise(resolve => {
-            const message = {
-                type: CONFIG.messageTypes.CLAIM_REQUEST,
-                claimType,
-                claimantActorId,
-                itemUuid,
-            };
             // TODO: Move response to a function above this scope, so the GM user can call it, too?
-            socket.emit(CONFIG.socket, message, response => {
+            socket.emit(MODULE_CONFIG.socket, message, response => {
                     //console.log('GOT A REQUEST RESPONSE!');
                     //console.log(response);
                     ui.notifications.warn("Got request response!");
@@ -46,12 +40,12 @@ export class SimpleLootSheet extends ActorSheet {
         return mergeObject(super.defaultOptions, {
             width: 700,
             height: 430,
-            classes: [CONFIG.ns, 'sheet', 'actor'],
+            classes: [MODULE_CONFIG.ns, 'sheet', 'actor'],
         });
     }
 
     get template() {
-        return `modules/${CONFIG.name}/templates/loot-sheet.hbs`;
+        return `modules/${MODULE_CONFIG.name}/templates/loot-sheet.hbs`;
     }
 
     activateListeners(html) {
@@ -61,9 +55,9 @@ export class SimpleLootSheet extends ActorSheet {
         super.activateListeners(html);
     }
 
-    getData() {
+    async getData() {
         let data = super.getData();
-        data.CONFIG = CONFIG;
+        data.MODULE_CONFIG = MODULE_CONFIG;
 
         data.isGM = game.user.isGM;
         //data.iamResponsibleGm = iamResponsibleGM(); // Storing this in this way causes the result to be false somehow.
@@ -81,25 +75,30 @@ export class SimpleLootSheet extends ActorSheet {
                 greeds: [],
             };
             //console.log('item for hbs layout', item);
-            const flags = item.data.flags[CONFIG.name];
+            const ourFlags = item.data.flags[MODULE_CONFIG.name];
             //console.log('item flags', flags);
-            if (!flags) continue;
+            if (!ourFlags) continue;
 
-            for (const key of Object.keys(flags)) {
-                const value = flags[key];
-                let actor = game.actors.get(key);
+            for (const key of Object.keys(ourFlags)) {
+                if (!key.startsWith('claim-')) continue;
+                const value = ourFlags[key];
+                const claimantUuid = uuidFromClaimFlag(key);
+                console.log('look up claimant', claimantUuid);
+                let actor = await fromUuid(claimantUuid);
                 if (!actor) {
                     //console.log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
                     continue;
                 }
+                actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
+                console.log('  ~*~ CLAIMANT ACTOR', actor);
                 let claimant = {
-                    actorId: key,
-                    actorName: actor.name,
-                    actorImg: actor.img,
+                    uuid: key,
+                    name: actor.name,
+                    img: actor.img,
                 };
                 switch (value) {
-                    case CONFIG.needKey: data.claims[item.uuid].needs.push(claimant); break;
-                    case CONFIG.greedKey: data.claims[item.uuid].greeds.push(claimant); break;
+                    case MODULE_CONFIG.needKey: data.claims[item.uuid].needs.push(claimant); break;
+                    case MODULE_CONFIG.greedKey: data.claims[item.uuid].greeds.push(claimant); break;
                 }
             }
         }
@@ -117,39 +116,37 @@ export class SimpleLootSheet extends ActorSheet {
         //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
-        let flags = item.getFlag(CONFIG.name, CONFIG.claimsKey) || {};
+        let flags = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {};
         //console.log('item', item);
         //console.log('flags', flags);
 
         const claimType = element.closest('.player-claims').dataset.claimType;
 
-        // TODO: Improve this to check all controlled, and prioritize user's assigned character.
-        //       Instead of just an actor ID, get a token UUID if at all possible.
-        //       Though linked actors can still get by with just an actor ID.
-        // Note: currently gets an actor ID; would a token ID work more universally?
-        const claimantId =
-            // players use their assigned actor
-            game.actors.find(t => t.id == game.user.data.character)?.data?._id ||
-            // else, GM (and potentially players) use an arbitrary selected token they control
-            //game.canvas.tokens.controlled.find(t=>t.owner)?.id;
-            game.canvas.tokens.controlled.find(t=>t.owner)?.data?.actorId;
-        //console.log('claimant', claimantId);
-        if (!claimantId) {
+        // TODO: If more than one token is controlled, make claims from all of them?
+        const selectedOwnedToken = canvas.tokens.controlled.filter(t=>t.isOwner)[0];
+        const claimantUuid =
+            // A selected, owned token has top priority as being the claimant.
+            // For example, if a player is controlling themselves and a sidekick or
+            // another, absent player, they can pick which one is making the claim.
+            selectedOwnedToken?.actor?.uuid ||
+            // If no owned token is selected, fall back to the user's assigned character.
+            (game.user.character ? `Actor.${game.user.character.id}` : undefined);
+        console.log('claimant', claimantUuid);
+        if (!claimantUuid) {
             //console.log('No claimant available.  Tried user\'s character and a controlled token.');
+            ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noClaimantAvailable`));
             return;
         }
-        // TODO: Should this be ._id instead?
-        //console.log('claimantId', claimantId);
 
         // check if this is a no-op
         // claimants will be a map of claimant actor ID -> claim type
-        const hasExistingClaim = flags[claimantId] == claimType;
+        const hasExistingClaim = flags[claimantUuid] == claimType;
         if (hasExistingClaim) {
             //console.log('Skipping redundant claim.');
             return;
         }
 
-        makeClaim(claimantId, claimType, item.uuid);
+        makeClaim(claimantUuid, claimType, item.uuid);
     }
 
     async _onDistributeLootClick(event) {
@@ -165,30 +162,37 @@ export class SimpleLootSheet extends ActorSheet {
         const actor = this.actor;
         //console.log(actor);
 
-        console.log('items:');
-        for (const [id, item] of this.actor.items.entries()) {
-            // Skip if it's already claimed.
-            if (item.getFlag(CONFIG.name, CONFIG.claimedByKey)) continue;
+        /* REM
+        const uuid = <token>.actor.uuid;
+        let document = await fromUuid(uuid);
+        let actorData = document.data.actorData || document.data; // To ensure unlinked tokens resolve to the "same" thing as linked ones.
 
+        note fromUuid on a client (non-GM?) returns an object.
+        fromUuid on the stand-alone server GM yields an Actor5e (or token document if unlinked)
+        */
+
+        console.log('items:');
+        for (const [lootedItemId, lootedItem] of this.actor.items.entries()) {
             const needs = Object.entries(
-                item.data.flags[CONFIG.name] || {}
+                lootedItem.data.flags[MODULE_CONFIG.name] || {}
                 )
-                ?.filter(entry => entry[1] == CONFIG.needKey)
+                ?.filter(entry => entry[1] == MODULE_CONFIG.needKey)
                 ?.map(entry => entry[0]);
             const greeds = Object.entries(
-                item.data.flags[CONFIG.name] || {}
+                lootedItem.data.flags[MODULE_CONFIG.name] || {}
                 )
-                ?.filter(entry => entry[1] == CONFIG.greedKey)
+                ?.filter(entry => entry[1] == MODULE_CONFIG.greedKey)
                 ?.map(entry => entry[0]);
 
             // Roll among the prioritized set of claimants (needs beat greeds).
             let claimantIds = needs.length > 0 ? needs : greeds;
             if (claimantIds.length <= 0) continue;
 
-            const winnerId = claimantIds[Math.floor(Math.random() * claimantIds.length)];
-            console.log('winner', winnerId);
+            const winnerUuidClaimFlagKey = claimantIds[Math.floor(Math.random() * claimantIds.length)];
+            console.log('winner', winnerUuidClaimFlagKey);
 
-            await item.setFlag(CONFIG.name, CONFIG.claimedByKey, winnerId);
+            // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
+            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimedByKey, winnerUuidClaimFlagKey);
         }
     }
 }

@@ -1,6 +1,5 @@
-export const CONFIG = {
+export const MODULE_CONFIG = {
     name: 'simple-loot-sheet-fvtt',
-    ns: 'simplelootsheet',
 
     socket: 'module.simple-loot-sheet-fvtt',
     messageTypes: {
@@ -21,4 +20,6 @@ export const CONFIG = {
     passKey: 'pass',
 
     claimedByKey: 'claimed-by',
+    lootedFromKey: 'looted-from',
+    lootedFromNameKey: 'looted-from-name',
 };

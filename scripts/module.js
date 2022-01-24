@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { MODULE_CONFIG } from './config.js';
 import { SimpleLootSheet } from './SimpleLootSheet.js';
 
 /* Notes for later:
@@ -19,6 +19,13 @@ export function iamResponsibleGM() {
         whoisResponsibleGM().id == game.user.id;
 }
 
+export function uuidFromClaimFlag(key) {
+    return key.replace('claim-', '').replaceAll('_', '.');
+}
+export function claimFlagFromUuid(uuid) {
+    return `claim-${uuid.replaceAll('.', '_')}`;
+}
+
 export async function handleSocketGm(message, userSenderId) {
     console.log('handleSocketGm()');
     console.log('Got a socket event:', message);
@@ -29,24 +36,26 @@ export async function handleSocketGm(message, userSenderId) {
 
     switch (message.type) {
         // Set claim to the specified value, or clear it if they're the same.
-        case CONFIG.messageTypes.CLAIM_REQUEST: {
-            const {claimType, claimantActorId, itemUuid} = message;
+        case MODULE_CONFIG.messageTypes.CLAIM_REQUEST: {
+            const {claimType, claimantUuid, itemUuid} = message;
             let item = await fromUuid(itemUuid);
             console.log('item being claimed', item);
+
+            const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
 
             // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
             // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
             // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
             // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
-            if (item.getFlag(CONFIG.name, claimantActorId) == claimType) {
-                console.log('UNSET claim');
-                //await item.unsetFlag(CONFIG.name, claimantActorId);  // Exists.  Does nothing.
-                item.setFlag(CONFIG.name, claimantActorId, CONFIG.passKey);
-                //console.log('flag after unsetting claim', item.getFlag(CONFIG.name, claimantActorId));
+            if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
+                //console.log('UNSET claim');
+                //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
+                item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
+                //console.log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
             }
             else {
-                console.log('SET claim');
-                item.setFlag(CONFIG.name, claimantActorId, claimType);
+                //console.log('SET claim');
+                item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
             }
             break;
         }
@@ -60,69 +69,72 @@ function handleSocket(message, senderUserId) {
     console.log('sender user ID', senderUserId);
     const response = "h'lo";
     //socket.ack(response);
-    //socket.broadcast.emit(CONFIG.socket, response);
-    socket.emit(CONFIG.socket, response);
+    //socket.broadcast.emit(MODULE_CONFIG.socket, response);
+    socket.emit(MODULE_CONFIG.socket, response);
 }
 
 Hooks.once('init', async function() {
-    console.log(`${CONFIG.name} | init`);
+    console.log(`${MODULE_CONFIG.name} | init`);
     //libWrapper.register('simple-loot-sheet-fvtt');
 
     // for the server-side
     // TODO: should this second param be async?
     /*
-    game.socket.on(CONFIG.socket, (request, ack) => {
+    game.socket.on(MODULE_CONFIG.socket, (request, ack) => {
         console.log('SOCKET server got the message');
         const response = Object.merge(request, {
             type: 'claimResponse',
         });
         //ack(response);
-        //game.socket.broadcast.emit(CONFIG.socket, response);
+        //game.socket.broadcast.emit(MODULE_CONFIG.socket, response);
     });
     */
 
     // for all other clients (not the original requester)
     /*
-    game.socket.on(CONFIG.socket, response => {
+    game.socket.on(MODULE_CONFIG.socket, response => {
         // call the same response handler as the requesting client.
         // doSomethingWithResponse(response);
         console.log('SOCKET uninvolved client got the response');
     });
     */
 
-    //Actors.registerSheet(CONFIG.ns, SimpleLootSheet, { makeDefault: false });
+    //Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, { makeDefault: false });
     switch (game.system.id) {
         // Add more system IDs here if the sheet is compatible with them.
         // Or add another case-break chunk to use a different sheet.
         case 'dnd5e': {
-            Actors.registerSheet(game.system.id, SimpleLootSheet, { makeDefault: false });
+            Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, {
+                label: 'simple-loot-sheet-fvtt.sheetName',
+                makeDefault: false,
+            });
             break;
         }
     }
 
     preloadHandlebarsTemplates();
-    console.log(`${CONFIG.name} | init done`);
+    console.log(`${MODULE_CONFIG.name} | init done`);
 });
 
 Hooks.once('ready', () => {
-    console.log(`${CONFIG.name} | ready`);
+    console.log(`${MODULE_CONFIG.name} | ready`);
 
     if (game.user.isGM)
-        socket.on(CONFIG.socket, handleSocketGm);
+        socket.on(MODULE_CONFIG.socket, handleSocketGm);
     else
-        socket.on(CONFIG.socket, handleSocket);
+        socket.on(MODULE_CONFIG.socket, handleSocket);
 
     /*
     // GM client listens
     if (game.user.isGM) {
-        game.socket.on(CONFIG.socket, async (data) => {
+        game.socket.on(MODULE_CONFIG.socket, async (data) => {
             //if (!data || !data.hasOwnProperty('type')) return;
 
             console.log('MODULE SOCKET LISTEN - GM', data);
         });
     }
     else {
-        game.socket.on(CONFIG.socket, async (data) => {
+        game.socket.on(MODULE_CONFIG.socket, async (data) => {
             //if (!data || !data.hasOwnProperty('type')) return;
 
             console.log('MODULE SOCKET LISTEN', data);
@@ -130,7 +142,7 @@ Hooks.once('ready', () => {
     }
     */
 
-    console.log(`${CONFIG.name} | ready done`);
+    console.log(`${MODULE_CONFIG.name} | ready done`);
 });
 
 
@@ -147,13 +159,13 @@ function registerPartial(name, path) {
 }
 async function preloadHandlebarsTemplates() {
     const namedTemplatePaths = {
-        claim: `modules/${CONFIG.name}/templates/player-claims.hbs`,
+        claim: `modules/${MODULE_CONFIG.name}/templates/player-claims.hbs`,
     };
     for (let name in namedTemplatePaths)
         registerPartial(name, namedTemplatePaths[name]);
 
     const templatePaths = [
-        `modules/${CONFIG.name}/templates/loot-sheet.hbs`,
+        `modules/${MODULE_CONFIG.name}/templates/loot-sheet.hbs`,
     ];
     return loadTemplates(templatePaths);
 }

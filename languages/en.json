@@ -1,9 +1,13 @@
 {
-    "simplelootsheet.item": "Item",
+    "simple-loot-sheet-fvtt.sheetName": "Simple Loot Sheet",
 
-    "simplelootsheet.need": "Will Use",
-    "simplelootsheet.greed": "Can Carry",
-    "simplelootsheet.pass": "Meh",
+    "simple-loot-sheet-fvtt.item": "Item",
 
-    "simplelootsheet.distributeLoot": "Dist. Loot"
+    "simple-loot-sheet-fvtt.need": "Will Use",
+    "simple-loot-sheet-fvtt.greed": "Can Carry",
+    "simple-loot-sheet-fvtt.pass": "Meh",
+
+    "simple-loot-sheet-fvtt.distributeLoot": "Dist. Loot",
+
+    "simple-loot-sheet-fvtt.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character."
 }
