@@ -90,7 +90,7 @@ export class SimpleLootSheet extends ActorSheet {
                 actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
 
                 let lootedByUuid = uuidFromClaimFlag(ourFlags[MODULE_CONFIG.lootedByKey]);
-                console.log('looted by', lootedByUuid, 'we are', key);
+                console.log('looted by', lootedByUuid, 'we are', claimantUuid);
 
                 let claimant = {
                     uuid: claimantUuid,
@@ -197,8 +197,8 @@ export class SimpleLootSheet extends ActorSheet {
             console.log(winnerUuid, claimantIds);
             console.log('winner', winnerUuid);
 
-            Item.create(lootedItem, {
-                parent: claimant,
+            Item.create(duplicate(lootedItem), {
+                parent: await fromUuid(winnerUuid),
             });
 
             // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
