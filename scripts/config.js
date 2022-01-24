@@ -19,7 +19,7 @@ export const MODULE_CONFIG = {
     greedKey: 'greed',
     passKey: 'pass',
 
-    claimedByKey: 'claimed-by',
+    lootedByKey: 'looted-by',
     lootedFromKey: 'looted-from',
     lootedFromNameKey: 'looted-from-name',
 };

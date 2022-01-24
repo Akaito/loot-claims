@@ -18,7 +18,7 @@
         </tr>
 
         {{#each claims }}
-            <tr class="item" data-item-uuid="{{uuid}}">
+            <tr class="item {{#if lootedBy}}looted{{/if}}" data-item-uuid="{{uuid}}">
                 <td class="item-brief">
                     <!-- <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div> -->
                         <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>

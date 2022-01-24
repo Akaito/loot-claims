@@ -20,10 +20,10 @@ export function iamResponsibleGM() {
 }
 
 export function uuidFromClaimFlag(key) {
-    return key.replace('claim-', '').replaceAll('_', '.');
+    return key?.replace('claim-', '').replaceAll('_', '.');
 }
 export function claimFlagFromUuid(uuid) {
-    return `claim-${uuid.replaceAll('.', '_')}`;
+    return `claim-${uuid?.replaceAll('.', '_')}`;
 }
 
 export async function handleSocketGm(message, userSenderId) {

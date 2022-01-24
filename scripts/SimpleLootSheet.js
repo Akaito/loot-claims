@@ -65,36 +65,38 @@ export class SimpleLootSheet extends ActorSheet {
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
         for (let item of this.actor.items) {
+            const ourFlags = item.data.flags[MODULE_CONFIG.name];
             data.claims[item.uuid] = {
                 uuid: item.uuid,
                 name: item.name,
                 img: item.img,
                 isStack: item.isStack,
                 quantity: item.data.quantity,
+                lootedBy: ourFlags ? ourFlags[MODULE_CONFIG.lootedByKey] : undefined,
                 needs: [],
                 greeds: [],
             };
-            //console.log('item for hbs layout', item);
-            const ourFlags = item.data.flags[MODULE_CONFIG.name];
-            //console.log('item flags', flags);
             if (!ourFlags) continue;
 
             for (const key of Object.keys(ourFlags)) {
                 if (!key.startsWith('claim-')) continue;
                 const value = ourFlags[key];
                 const claimantUuid = uuidFromClaimFlag(key);
-                console.log('look up claimant', claimantUuid);
                 let actor = await fromUuid(claimantUuid);
                 if (!actor) {
                     //console.log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
                     continue;
                 }
                 actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
-                console.log('  ~*~ CLAIMANT ACTOR', actor);
+
+                let lootedByUuid = uuidFromClaimFlag(ourFlags[MODULE_CONFIG.lootedByKey]);
+                console.log('looted by', lootedByUuid, 'we are', key);
+
                 let claimant = {
-                    uuid: key,
+                    uuid: claimantUuid,
                     name: actor.name,
                     img: actor.img,
+                    winner: lootedByUuid == claimantUuid,
                 };
                 switch (value) {
                     case MODULE_CONFIG.needKey: data.claims[item.uuid].needs.push(claimant); break;
@@ -192,7 +194,7 @@ export class SimpleLootSheet extends ActorSheet {
             console.log('winner', winnerUuidClaimFlagKey);
 
             // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
-            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimedByKey, winnerUuidClaimFlagKey);
+            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuidClaimFlagKey);
         }
     }
 }
