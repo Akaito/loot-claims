@@ -19,6 +19,6 @@ export const CONFIG = {
     needKey: 'need',
     greedKey: 'greed',
     passKey: 'pass',
-    //claimCategories: ['need','greed','pass'],
-    //claimCategoryNames: ['simplelootsheet.need', 'simplelootsheet.greed', 'simplelootsheet.pass'],
+
+    claimedByKey: 'claimed-by',
 };

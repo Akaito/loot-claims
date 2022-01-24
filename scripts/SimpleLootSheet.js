@@ -163,6 +163,32 @@ export class SimpleLootSheet extends ActorSheet {
         event.preventDefault();
         const element = event.currentTarget;
         const actor = this.actor;
-        console.log(actor);
+        //console.log(actor);
+
+        console.log('items:');
+        for (const [id, item] of this.actor.items.entries()) {
+            // Skip if it's already claimed.
+            if (item.getFlag(CONFIG.name, CONFIG.claimedByKey)) continue;
+
+            const needs = Object.entries(
+                item.data.flags[CONFIG.name] || {}
+                )
+                ?.filter(entry => entry[1] == CONFIG.needKey)
+                ?.map(entry => entry[0]);
+            const greeds = Object.entries(
+                item.data.flags[CONFIG.name] || {}
+                )
+                ?.filter(entry => entry[1] == CONFIG.greedKey)
+                ?.map(entry => entry[0]);
+
+            // Roll among the prioritized set of claimants (needs beat greeds).
+            let claimantIds = needs.length > 0 ? needs : greeds;
+            if (claimantIds.length <= 0) continue;
+
+            const winnerId = claimantIds[Math.floor(Math.random() * claimantIds.length)];
+            console.log('winner', winnerId);
+
+            await item.setFlag(CONFIG.name, CONFIG.claimedByKey, winnerId);
+        }
     }
 }
