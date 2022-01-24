@@ -175,6 +175,9 @@ export class SimpleLootSheet extends ActorSheet {
 
         console.log('items:');
         for (const [lootedItemId, lootedItem] of this.actor.items.entries()) {
+            // Skip items that've already been looted.
+            if (lootedItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
+
             const needs = Object.entries(
                 lootedItem.data.flags[MODULE_CONFIG.name] || {}
                 )
