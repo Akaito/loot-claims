@@ -10,7 +10,8 @@
 
 ---
 TODO/NEXT:
-- [ ] Users can't set flags on a token's embedded items.  Communicate claim-staking with socket.
+- [ ] Distribute loot.
+- [ ] Implement "Steal"?  Future feature _maybe_.
 ---
 
 
