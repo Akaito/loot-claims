@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { SimpleLootSheet } from './loot-sheet.js';
+import { SimpleLootSheet } from './SimpleLootSheet.js';
 
 /* Notes for later:
 game.socket.emit('module.<module-name>', <object>);

@@ -66,7 +66,7 @@ export class SimpleLootSheet extends ActorSheet {
         data.CONFIG = CONFIG;
 
         data.isGM = game.user.isGM;
-        data.iamResponsibleGM = iamResponsibleGM();
+        //data.iamResponsibleGm = iamResponsibleGM(); // Storing this in this way causes the result to be false somehow.
 
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
@@ -154,7 +154,8 @@ export class SimpleLootSheet extends ActorSheet {
 
     async _onDistributeLootClick(event) {
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
-        if (!iamResponsibleGm) {
+        //if (!this.iamResponsibleGm) {
+        if (!iamResponsibleGM()) {
             ui.notifications.error("Only the arbitrarily-chosen responsible GM can distribute loot.");
             return;
         }
@@ -162,6 +163,6 @@ export class SimpleLootSheet extends ActorSheet {
         event.preventDefault();
         const element = event.currentTarget;
         const actor = this.actor;
-        //console.log(actor);
+        console.log(actor);
     }
 }
