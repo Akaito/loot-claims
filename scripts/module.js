@@ -42,6 +42,7 @@ export async function handleSocketGm(message, userSenderId) {
                 console.log('UNSET claim');
                 //await item.unsetFlag(CONFIG.name, claimantActorId);  // Exists.  Does nothing.
                 item.setFlag(CONFIG.name, claimantActorId, CONFIG.passKey);
+                //console.log('flag after unsetting claim', item.getFlag(CONFIG.name, claimantActorId));
             }
             else {
                 console.log('SET claim');
