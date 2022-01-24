@@ -46,7 +46,7 @@ This still lets the table contents slide up above the table, visible above the h
     margin: 0 auto;
 }
 
-.simple-loot-sheet-table .claimant-image,img {
+.simple-loot-sheet-table .claimant-image,.item-image {
     width: var(--simple-loot-sheet-img-size);
     height: var(--simple-loot-sheet-img-size);
     min-width: var(--simple-loot-sheet-img-size);
