@@ -193,11 +193,16 @@ export class SimpleLootSheet extends ActorSheet {
             let claimantIds = needs.length > 0 ? needs : greeds;
             if (claimantIds.length <= 0) continue;
 
-            const winnerUuidClaimFlagKey = claimantIds[Math.floor(Math.random() * claimantIds.length)];
-            console.log('winner', winnerUuidClaimFlagKey);
+            const winnerUuid = uuidFromClaimFlag(claimantIds[Math.floor(Math.random() * claimantIds.length)]);
+            console.log(winnerUuid, claimantIds);
+            console.log('winner', winnerUuid);
+
+            Item.create(lootedItem, {
+                parent: claimant,
+            });
 
             // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
-            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuidClaimFlagKey);
+            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
         }
     }
 }
