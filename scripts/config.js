@@ -2,6 +2,7 @@ import { reset } from './module.js';
 
 export const MODULE_CONFIG = {
     name: 'simple-loot-sheet-fvtt',
+    nameHuman: 'Simple Loot Sheet',
 
     excludedItemTypes: ['class', 'spell', 'feat'],
 

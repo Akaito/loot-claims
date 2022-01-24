@@ -9,11 +9,24 @@ game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 /// Try using this like `SimpleLootSheet.reset(canvas.scene.tokens)` to reset everything in a scene.
 ///
 /// target: Actor, Token, or Item.
-export async function reset(actor) {
+export async function reset(actor, {prompt=true} = {}) {
+    if (prompt === true) {
+        if (await Dialog.confirm({
+            title: MODULE_CONFIG.nameHuman,
+            // TODO: Give more context.  Like one token, scene of tokens, number of tokens, etc.
+            content: game.i18n.localize(`${MODULE_CONFIG.name}.confirmResetMessage`),
+            defaultYes: false,
+            rejectClose: false,
+        }) === true) {
+            reset(actor, {prompt:false});
+        }
+        return;
+    }
+
     // TODO: Update all at once, instead of one at a time.
     if (Array.isArray(actor)) {
         for (let a of actor) {
-            await reset(a);
+            await reset(a, {prompt:false});
         }
         return;
     }
@@ -21,7 +34,7 @@ export async function reset(actor) {
     if (Array.isArray(actor?.contents)) {
         // TODO: Update them all at once.
         for (let a of actor) {
-            await reset(a);
+            await reset(a, {prompt:false});
         }
         return;
     }
