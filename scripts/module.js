@@ -6,6 +6,45 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
+/// Try using this like `SimpleLootSheet.reset(canvas.scene.tokens)` to reset everything in a scene.
+///
+/// target: Actor, Token, or Item.
+export async function reset(actor) {
+    // TODO: Update all at once, instead of one at a time.
+    if (Array.isArray(actor)) {
+        for (let a of actor) {
+            await reset(a);
+        }
+        return;
+    }
+    // Janky check to see if we've been given a Map.
+    if (Array.isArray(actor?.contents)) {
+        // TODO: Update them all at once.
+        for (let a of actor) {
+            await reset(a);
+        }
+        return;
+    }
+    actor = actor?.actor || actor; // In case we were given a token.
+
+    let items = actor?.items;
+    if (!items) {
+        ui.notifications.error(`${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.`);
+        console.log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand:", actor);
+        return;
+    }
+
+    let updates = [];
+    for (let item of items) {
+        //console.log('should attempt reset on', item, item.name, item.data?.flags);
+        if (item.data?.flags[MODULE_CONFIG.name]) {
+            updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+        }
+    }
+    //console.log('pushing updates', updates);
+    await actor.updateEmbeddedDocuments('Item', updates);
+}
+
 /// Just need a single GM; doesn't matter who.  So find the active GM user with the lowest ID.
 export function whoisResponsibleGM() {
     return game.users
@@ -124,23 +163,9 @@ Hooks.once('ready', () => {
     else
         socket.on(MODULE_CONFIG.socket, handleSocket);
 
-    /*
-    // GM client listens
-    if (game.user.isGM) {
-        game.socket.on(MODULE_CONFIG.socket, async (data) => {
-            //if (!data || !data.hasOwnProperty('type')) return;
-
-            console.log('MODULE SOCKET LISTEN - GM', data);
-        });
-    }
-    else {
-        game.socket.on(MODULE_CONFIG.socket, async (data) => {
-            //if (!data || !data.hasOwnProperty('type')) return;
-
-            console.log('MODULE SOCKET LISTEN', data);
-        });
-    }
-    */
+    window.SimpleLootSheet = {
+        reset
+    };
 
     console.log(`${MODULE_CONFIG.name} | ready done`);
 });
