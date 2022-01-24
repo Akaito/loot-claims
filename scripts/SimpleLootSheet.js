@@ -197,8 +197,10 @@ export class SimpleLootSheet extends ActorSheet {
             console.log(winnerUuid, claimantIds);
             console.log('winner', winnerUuid);
 
+            let parent = await fromUuid(winnerUuid);
+            parent = parent.actor || parent; // To make tokens and actors the "same".
             Item.create(duplicate(lootedItem), {
-                parent: await fromUuid(winnerUuid),
+                parent,
             });
 
             // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
