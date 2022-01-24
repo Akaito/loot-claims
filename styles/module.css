@@ -50,10 +50,9 @@ This still lets the table contents slide up above the table, visible above the h
     /* future: don't hide, but show winner of loot instead
     display: none; 
     */
-    opacity: 0.5;
+    opacity: 0.35;
 }
 .simple-loot-sheet-table .claimant-image.winner {
-    /* opacity: 1; */
     background-color: turquoise;
     border-radius: 5px;
 }
