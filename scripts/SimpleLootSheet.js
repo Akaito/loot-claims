@@ -51,6 +51,7 @@ export class SimpleLootSheet extends ActorSheet {
     activateListeners(html) {
         html.find('.player-claims').click(this._onClaimClick.bind(this));
         html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
+        html.find('.reset-loot').click(this._onResetLootClick.bind(this));
 
         super.activateListeners(html);
     }
@@ -65,6 +66,11 @@ export class SimpleLootSheet extends ActorSheet {
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
         for (let item of this.actor.items) {
+            // dnd5e: skip "natural" weapons, spells, features, etc.
+            if (item.data?.data?.weaponType == 'natural') continue;
+            if (item.data?.data?.armor?.type == 'natural') continue;
+            if (MODULE_CONFIG.excludedItemTypes.includes(item.type)) continue;
+
             const ourFlags = item.data.flags[MODULE_CONFIG.name];
             data.claims[item.uuid] = {
                 uuid: item.uuid,
@@ -216,5 +222,20 @@ export class SimpleLootSheet extends ActorSheet {
             // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
             await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
         }
+    }
+
+    async _onResetLootClick(event) {
+        if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+        //if (!this.iamResponsibleGm) {
+        if (!iamResponsibleGM()) {
+            ui.notifications.error("Only the arbitrarily-chosen responsible GM can distribute loot.");
+            return;
+        }
+
+        event.preventDefault();
+        const element = event.currentTarget;
+        const actor = this.actor;
+
+        MODULE_CONFIG.functions.reset(actor);
     }
 }

@@ -2,6 +2,11 @@
     --simple-loot-sheet-img-size: 36px;
 }
 
+.simple-loot-sheet-app .gm-header {
+    display: flex;
+    flex-direction: row;
+}
+
 .simple-loot-sheet-table tr {
     height: var(--simple-loot-sheet-img-size);
     min-height: var(--simple-loot-sheet-img-size);

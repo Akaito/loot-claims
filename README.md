@@ -11,6 +11,7 @@
 ---
 TODO/NEXT:
 - [x] Distribute loot.
+- [ ] Button on scene right-click to reset looted flags.
 - [ ] Test distributing loot from a linked actor.
 - [ ] Implement "Steal"?  Future feature _maybe_.
 ---

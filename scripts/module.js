@@ -163,9 +163,7 @@ Hooks.once('ready', () => {
     else
         socket.on(MODULE_CONFIG.socket, handleSocket);
 
-    window.SimpleLootSheet = {
-        reset
-    };
+    window.SimpleLootSheet = MODULE_CONFIG.functions;
 
     console.log(`${MODULE_CONFIG.name} | ready done`);
 });

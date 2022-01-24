@@ -7,7 +7,8 @@
     "simple-loot-sheet-fvtt.greed": "Can Carry",
     "simple-loot-sheet-fvtt.pass": "Meh",
 
-    "simple-loot-sheet-fvtt.distributeLoot": "Dist. Loot",
+    "simple-loot-sheet-fvtt.distributeLoot": "Distribute Loot",
+    "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
 
     "simple-loot-sheet-fvtt.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character."
 }

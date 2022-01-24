@@ -1,11 +1,12 @@
-<form class="{{cssClass}}" autocomplete="off">
+<form class="{{cssClass}} simple-loot-sheet-app" autocomplete="off">
     <!-- Notes for later
     https://foundryvtt.com/api/HandlebarsHelpers.html
     -->
 
     {{#if isGM}}
-    <div>
+    <div class="gm-header">
         <button class="distribute-loot">{{localize 'simple-loot-sheet-fvtt.distributeLoot'}}</button>
+        <button class="reset-loot">{{localize 'simple-loot-sheet-fvtt.resetLoot'}}</button>
     </div>
     {{/if}}
 
