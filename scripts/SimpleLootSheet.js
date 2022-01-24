@@ -173,7 +173,7 @@ export class SimpleLootSheet extends ActorSheet {
         fromUuid on the stand-alone server GM yields an Actor5e (or token document if unlinked)
         */
 
-        console.log('items:');
+        //console.log('items:');
         for (const [lootedItemId, lootedItem] of this.actor.items.entries()) {
             // Skip items that've already been looted.
             if (lootedItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
@@ -194,8 +194,6 @@ export class SimpleLootSheet extends ActorSheet {
             if (claimantIds.length <= 0) continue;
 
             const winnerUuid = uuidFromClaimFlag(claimantIds[Math.floor(Math.random() * claimantIds.length)]);
-            console.log(winnerUuid, claimantIds);
-            console.log('winner', winnerUuid);
 
             let recipientItemData = duplicate(lootedItem);
             // Clear claim keys, and set where it came from.
@@ -207,15 +205,13 @@ export class SimpleLootSheet extends ActorSheet {
             if (recipientItemData.data.equipped === true) { // dnd5e, possibly other systems
                 recipientItemData.data.equipped = false;
             }
-            console.log('recipientItemData', recipientItemData);
+            //console.log('recipientItemData', recipientItemData);
             let parent = await fromUuid(winnerUuid);
             parent = parent.actor || parent; // To make tokens and actors the "same".
             let recipientItem = await Item.create(recipientItemData, {
                 parent,
             });
-            //await recipientItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedFromKey, this.actor.uuid);
-            //await recipientItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedFromNameKey, this.actor.name);
-            console.log('recipientItem', recipientItem);
+            //console.log('recipientItem', recipientItem);
 
             // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
             await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
