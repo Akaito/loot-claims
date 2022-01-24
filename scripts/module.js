@@ -169,6 +169,35 @@ Hooks.once('ready', () => {
 });
 
 
+function _onResetSceneLootClick(html) {
+    let sceneId = html.closest('[data-scene-id]').data('scene-id');
+    MODULE_CONFIG.functions.reset(game.scenes.get(sceneId).tokens);
+}
+
+//Hooks.on('renderSceneNavigation', async (app, html, options) => {
+Hooks.on('getSceneNavigationContext', async (app, html, options) => {
+    console.log('                   RENDER SCENE NAVIGATION');
+    if (!game.user.isGM) return;
+
+    //console.log('html', html.find('.context-items'));
+    console.log('html', html);
+
+    /*
+    html.find('.context-items')
+        .append($(getSceneContextEntryHtml)
+            .click(_onResetSceneLootClick)
+        );
+    */
+
+    html.push({
+        name: `${MODULE_CONFIG.name}.resetLoot`,
+        icon: '<i class="fas fa-coins"></i>',
+        callback: _onResetSceneLootClick,
+        condition: _ => game.user.isGM,
+    });
+});
+
+
 // registerPartial was written by Lucas Straub#5006 on Foundry's Discord.
 // https://discord.com/channels/170995199584108546/670336275496042502/781764805660770315
 function registerPartial(name, path) {
