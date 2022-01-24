@@ -10,7 +10,8 @@
 
 ---
 TODO/NEXT:
-- [ ] Distribute loot.
+- [x] Distribute loot.
+- [ ] Test distributing loot from a linked actor.
 - [ ] Implement "Steal"?  Future feature _maybe_.
 ---
 

@@ -20,6 +20,6 @@ export const MODULE_CONFIG = {
     passKey: 'pass',
 
     lootedByKey: 'looted-by',
-    lootedFromKey: 'looted-from',
+    lootedFromKey: 'looted-from-uuid',
     lootedFromNameKey: 'looted-from-name',
 };

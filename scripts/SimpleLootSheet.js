@@ -197,13 +197,27 @@ export class SimpleLootSheet extends ActorSheet {
             console.log(winnerUuid, claimantIds);
             console.log('winner', winnerUuid);
 
+            let recipientItemData = duplicate(lootedItem);
+            // Clear claim keys, and set where it came from.
+            recipientItemData.flags[MODULE_CONFIG.name] = {
+                'looted-from-uuid': this.actor.uuid,
+                'looted-from-name': this.actor.name,
+            };
+            // The recipient's new item shouldn't be equipped, since it's just been looted.
+            if (recipientItemData.data.equipped === true) { // dnd5e, possibly other systems
+                recipientItemData.data.equipped = false;
+            }
+            console.log('recipientItemData', recipientItemData);
             let parent = await fromUuid(winnerUuid);
             parent = parent.actor || parent; // To make tokens and actors the "same".
-            Item.create(duplicate(lootedItem), {
+            let recipientItem = await Item.create(recipientItemData, {
                 parent,
             });
+            //await recipientItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedFromKey, this.actor.uuid);
+            //await recipientItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedFromNameKey, this.actor.name);
+            console.log('recipientItem', recipientItem);
 
-            // TODO: Distribute all in one update.  Optimization, and prevents sheet flicker.
+            // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
             await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
         }
     }
