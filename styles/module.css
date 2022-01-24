@@ -55,6 +55,7 @@ This still lets the table contents slide up above the table, visible above the h
 .simple-loot-sheet-table .claimant-image.winner {
     /* opacity: 1; */
     background-color: turquoise;
+    border-radius: 5px;
 }
 
 .simple-loot-sheet-table .claimant-image,
