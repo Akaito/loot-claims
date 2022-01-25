@@ -93,8 +93,9 @@ export class SimpleLootSheet extends ActorSheet {
 
     activateListeners(html) {
         html.find('.player-claims').click(this._onClaimClick.bind(this));
-        html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
         html.find('.reset-loot').click(this._onResetLootClick.bind(this));
+        html.find('.add-loot-table').click(this._onAddLootTableClick.bind(this));
+        html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
 
         super.activateListeners(html);
     }
@@ -203,6 +204,7 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
     async _onDistributeLootClick(event) {
+        event.preventDefault();
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
         //if (!this.iamResponsibleGm) {
         if (!iamResponsibleGM()) {
@@ -210,7 +212,6 @@ export class SimpleLootSheet extends ActorSheet {
             return;
         }
 
-        event.preventDefault();
         const element = event.currentTarget;
         const actor = this.actor;
         //console.log(actor);
@@ -270,17 +271,139 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
     async _onResetLootClick(event) {
+        event.preventDefault();
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
-        //if (!this.iamResponsibleGm) {
         if (!iamResponsibleGM()) {
-            ui.notifications.error("Only the arbitrarily-chosen responsible GM can distribute loot.");
+            ui.notifications.error(game.i18n.localize('simple-loot-sheet-fvtt.responsibleGmOnly'));
             return;
         }
 
-        event.preventDefault();
-        const element = event.currentTarget;
         const actor = this.actor;
 
         MODULE_CONFIG.functions.reset(actor);
     }
+
+    async _onAddLootTableClick(event) {
+        if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+        if (!iamResponsibleGM()) {
+            ui.notifications.error(game.i18n.localize('simple-loot-sheet-fvtt.responsibleGmOnly'));
+            return;
+        }
+
+        const element = event.currentTarget;
+        console.log('elements:', element, element.closest('[data-roll-table-uuid]'));
+        const tableUuid = $(element.closest('[data-roll-table-uuid]'))?.data('roll-table-uuid');
+        const table = await fromUuid(tableUuid);
+        if (!table)  {
+            ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noSuchTable`));
+            console.log('Was asked to find a table, but none existed with the given uuid:', tableUuid);
+            return;
+        }
+
+        if (game.betterTables) {
+            //game.betterTables.addLootToSelectedToken(this);
+            let cloneTable = table.clone({}, {}, {temporary:true});
+            console.log(this);
+            console.log('   CLONE TABLE', cloneTable);
+            //let result = await game.betterTables.addLootToSelectedToken(cloneTable, this.actor);
+            //console.log('  RESULT', result);
+            UseBetterTables(this.token, cloneTable);
+        }
+        else {
+            // TODO: UNIMPLEMENTED
+            ui.notifications.error('Currently reliant on the Better Roll Tables module.');
+        }
+    }
+}
+
+// Mostly from a macro I hadn't shared yet.
+async function UseBetterTables (token, table) {
+    //const brtBuilder = new BRTBuilder(table);
+    //const results = await brtBuilder.betterRoll();
+    //const br = new BetterResults(results);
+    /*
+    const betterResults = await br.buildResults(table);
+    const currencyData = br.getCurrencyData();
+    const lootCreator = new LootCreator(betterResults, currencyData);
+    await lootCreator.addCurrenciesToToken(token);
+    await lootCreator.addItemsToToken(token);
+    */
+
+    if (table.getFlag('better-rolltables', 'table-type') != 'loot') {
+        ui.notifications.error('Only loot-type tables from Better Rolltables are supported at this time.');
+        return;
+    }
+
+    const newLoot = {};
+    const results = await game.betterTables.getBetterTableResults(table);
+    console.log('better table results:', results);
+    results.forEach(entry => {
+        const fullId = `${entry.data.collection}.${entry.data.resultId}`;
+        if (!(fullId in newLoot))
+            newLoot[fullId] = {
+                collection: entry.data.collection,
+                resultId: entry.data.resultId,
+                quantity: Number(0),
+                text: entry.data.text,
+            };
+        newLoot[fullId].quantity += Number(1);
+        console.log('new quantity:', newLoot[fullId].quantity);
+    });
+
+    const preExistingItems = token.actor.getEmbeddedCollection('Item');
+    const itemUpdates = [];
+    const newItems = [];
+    // Figure out whether each loot entry is already present on the receiving
+    // token, or is totally new to it.  How we add it differs depending on that.
+    for (const loot of Object.values(newLoot)) {
+        console.log(loot);
+        // TODO: Don't assume the loot table's contents is a Compendium item.
+        // (Thanks to Discord Crymic#9452 for help with compendium/pack access.)
+        // https://discord.com/channels/170995199584108546/699750150674972743/897045003526869012
+        const pack = await game.packs.get(loot.collection);
+        const packDocs = await pack?.getDocuments();
+        const packItem = await packDocs?.find(item => item.data._id == loot.resultId);
+        if (!packItem) {
+            ui.notifications.error(`No such compendium item: ${loot.collection}.${loot.resultId} (${loot.text}).`);
+            continue;
+        }
+
+        // TODO: If we've already imported the item to this world (compare by name?), use that instead.
+
+        // Consider a pre-existing item on the actor to be the same as this new
+        // loot item if its type and name match.  Imperfect, but might be the most
+        // sane means without being _too_ restrictive.
+        const actorItem = preExistingItems.find(actorItem => actorItem.type == packItem.type && actorItem.name == packItem.name);
+        // If the actor already has the item, just increase its quantity.
+        if (actorItem) {
+            /*
+            console.log(actorItem);
+            console.log('found pre-existing item');
+            console.log('actorItem', actorItem);
+            console.log('loot', loot);
+            */
+            itemUpdates.push({
+                _id: actorItem.id,
+                id: actorItem.id,
+                data: {
+                    quantity: Number(actorItem.data.data.quantity) + Number(loot.quantity),
+                },
+            });
+        }
+        // Otherwise, we need to make a new one.
+        else {
+            newItems.push(packItem.clone({
+                data: {quantity: Number(loot.quantity)},
+            }).data);
+        }
+    }
+
+    //console.log('itemUpdates', itemUpdates);
+    //console.log('newItems', newItems);
+
+    // Update quantities.
+    await token.actor.updateEmbeddedDocuments('Item', itemUpdates);
+    // Create items.
+    await token.actor.createEmbeddedDocuments('Item', newItems);
+    await table.reset();
 }

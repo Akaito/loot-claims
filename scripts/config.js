@@ -33,4 +33,6 @@ export const MODULE_CONFIG = {
     lootedByKey: 'looted-by',
     lootedFromKey: 'looted-from-uuid',
     lootedFromNameKey: 'looted-from-name',
+
+    generatedFromKey: 'generated-from',
 };

@@ -47,11 +47,18 @@ export async function reset(actor, {prompt=true} = {}) {
         return;
     }
 
+    let toBeDeleted = [];
     let updates = [];
     for (let item of items) {
         //console.log('should attempt reset on', item, item.name, item.data?.flags);
-        if (item.data?.flags[MODULE_CONFIG.name]) {
-            updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+        const ourFlags = item.data?.flags[MODULE_CONFIG.name];
+        if (ourFlags) {
+            if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
+                toBeDeleted.push(item.id);
+            }
+            else {
+                updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+            }
         }
     }
     //console.log('pushing updates', updates);

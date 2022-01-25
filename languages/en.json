@@ -7,11 +7,14 @@
     "simple-loot-sheet-fvtt.greed": "Can Carry",
     "simple-loot-sheet-fvtt.pass": "Meh",
 
-    "simple-loot-sheet-fvtt.addLootTable": "Add Loot Table",
+    "simple-loot-sheet-fvtt.addLootTable": "Add Loot from Table",
+    "simple-loot-sheet-fvtt.addLootTableEmphasized": "Add",
     "simple-loot-sheet-fvtt.distributeLoot": "Distribute Loot",
     "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
 
     "simple-loot-sheet-fvtt.confirmResetMessage": "Reset all claimed loot?",
     "simple-loot-sheet-fvtt.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character.",
-    "simple-loot-sheet-fvtt.noneFound": "None Found"
+    "simple-loot-sheet-fvtt.noSuchTable": "No such table was found.  See the console for details.",
+    "simple-loot-sheet-fvtt.noneFound": "None Found",
+    "simple-loot-sheet-fvtt.responsibleGmOnly": "Only the arbitrarily-chosen responsible GM can distribute loot."
 }
