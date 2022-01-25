@@ -5,6 +5,10 @@
 .simple-loot-sheet-app .gm-header {
     display: flex;
     flex-direction: row;
+    /*
+    position: sticky;
+    top: 0;
+    */
 }
 
 .simple-loot-sheet-table tr {
