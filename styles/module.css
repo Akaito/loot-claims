@@ -11,8 +11,8 @@
     */
 }
 
-.simple-loot-sheet-app .gm-header .reset-loot {
-    width: 30%;
+.simple-loot-sheet-app .gm-header button {
+    width: 33%;
 }
 
 .simple-loot-sheet-table tr {

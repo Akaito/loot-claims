@@ -1,4 +1,5 @@
 import { reset } from './module.js';
+import { findLootTable } from './SimpleLootSheet.js';
 
 export const MODULE_CONFIG = {
     name: 'simple-loot-sheet-fvtt',
@@ -7,6 +8,7 @@ export const MODULE_CONFIG = {
     excludedItemTypes: ['class', 'spell', 'feat'],
 
     functions: {
+        findLootTable,
         reset,
     },
 

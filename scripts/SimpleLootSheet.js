@@ -34,6 +34,49 @@ async function makeClaim(claimantUuid, claimType, itemUuid) {
     }
 }
 
+export async function findLootTable(actor) {
+    actor = actor?.actor || actor; // Change token to actor if needed.
+    if (!actor) return undefined;
+    const betterRollTablesActive = game.modules.get('better-rolltables')?.active || false;
+    // May get a name like "Compendium.scope.compendium-id.actor-id".
+    //let coreName = token.actor.data.flags?.core?.sourceId;
+    //coreName = coreName.split('.');
+    // The first table-get that gives us something wins.
+    //   TODO?: Check the world first, then compendiums.  We may only be checking
+    //          the world here.
+
+    let possibleTableNames = [
+        actor.name, // Token's or actor's name.
+        game.actors.get(actor.id)?.name, // Original, world-scope actor's name.
+        actor.data.flags?.ddbimporter?.originalItemName, // Original D&DB importer's actor's name.
+    ];
+    for (const name of possibleTableNames) {
+        const table = game.tables.getName(name);
+        if (table) return table;
+    }
+
+    // Next, try the compendiums.
+    const packs = game.packs.filter(p => p.metadata.type == 'RollTable');
+    for (const pack of packs) {
+        for (const name of possibleTableNames) {
+            const compendiumTableId = pack.index.find(e => e.name == name)?._id;
+            if (!compendiumTableId) continue;
+            const compendiumTable = await pack.getDocument(compendiumTableId);
+            if (compendiumTable) return compendiumTable;
+        }
+    }
+
+    /*
+    return game.tables.getName(actor.name) || // used to be token's name, which _can_ be useful
+        // Same name as the original actor (if there is one).
+        game.tables.getName(game.actors.get(actor.id)?.name) ||
+        // Same name as the original thing imported by the D&D Beyond Importer module.
+        game.tables.getName(token.actor.data.flags?.ddbimporter?.originalItemName)
+        // TODO: Try to regex-out Token Mold name changes?
+    ;
+    */
+}
+
 export class SimpleLootSheet extends ActorSheet {
 
     static get defaultOptions() {
@@ -59,6 +102,8 @@ export class SimpleLootSheet extends ActorSheet {
     async getData() {
         let data = super.getData();
         data.MODULE_CONFIG = MODULE_CONFIG;
+
+        data.lootTable = await findLootTable(this);
 
         data.isGM = game.user.isGM;
         //data.iamResponsibleGm = iamResponsibleGM(); // Storing this in this way causes the result to be false somehow.
