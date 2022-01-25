@@ -34,7 +34,8 @@
                         <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>
                     <div class="item-name">
                         {{~name~}}
-                        {{~#if isStack~}}&nbsp;({{~quantity~}}){{~/if~}}
+                        {{log 'FOO CLAIM TEST'}}{{log ..}}
+                        {{~#if quantity~}}&nbsp;({{~quantity~}}){{~/if~}}
                     </div>
                 </td>
 

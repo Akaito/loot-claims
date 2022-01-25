@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config.js';
-import { claimFlagFromUuid, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
+import { claimFlagFromUuid, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
@@ -118,12 +118,12 @@ export class SimpleLootSheet extends ActorSheet {
             if (MODULE_CONFIG.excludedItemTypes.includes(item.type)) continue;
 
             const ourFlags = item.data.flags[MODULE_CONFIG.name];
+            console.log('           QUANTITY', item);
             data.claims[item.uuid] = {
                 uuid: item.uuid,
                 name: item.name,
                 img: item.img,
-                isStack: item.isStack,
-                quantity: item.data.quantity,
+                quantity: item.data.data.quantity,
                 lootedBy: ourFlags ? ourFlags[MODULE_CONFIG.lootedByKey] : undefined,
                 needs: [],
                 greeds: [],
@@ -131,7 +131,7 @@ export class SimpleLootSheet extends ActorSheet {
             if (!ourFlags) continue;
 
             for (const key of Object.keys(ourFlags)) {
-                if (!key.startsWith('claim-')) continue;
+                if (!key.startsWith('claim~')) continue;
                 const value = ourFlags[key];
                 const claimantUuid = uuidFromClaimFlag(key);
                 let actor = await fromUuid(claimantUuid);
@@ -335,7 +335,11 @@ async function UseBetterTables (token, table) {
     }
 
     const newLoot = {};
-    const results = await game.betterTables.getBetterTableResults(table);
+    const brtBuilder = new BRTBuilder(table);
+    const results = await brtBuilder.betterRoll();
+    const brtResults = new BetterResults(results);
+    console.log('  BRT', brtBuilder, brtResults);
+    //const results = await game.betterTables.getBetterTableResults(table);
     console.log('better table results:', results);
     results.forEach(entry => {
         const fullId = `${entry.data.collection}.${entry.data.resultId}`;
@@ -347,7 +351,7 @@ async function UseBetterTables (token, table) {
                 text: entry.data.text,
             };
         newLoot[fullId].quantity += Number(1);
-        console.log('new quantity:', newLoot[fullId].quantity);
+        //console.log('new quantity:', newLoot[fullId].quantity);
     });
 
     const preExistingItems = token.actor.getEmbeddedCollection('Item');
@@ -392,9 +396,27 @@ async function UseBetterTables (token, table) {
         }
         // Otherwise, we need to make a new one.
         else {
-            newItems.push(packItem.clone({
-                data: {quantity: Number(loot.quantity)},
-            }).data);
+            console.log('making new item from packItem', packItem, table);
+            let newItemData = packItem.clone({
+                data: {
+                    quantity: Number(loot.quantity),
+                    //data: {
+                    //},
+                },
+                        flags: {
+                            'simple-loot-sheet-fvtt': {
+                                'source-item': encodeUuidForFlag(packItem.uuid),
+                                'generated-from': encodeUuidForFlag(table.uuid),
+                            },
+                        },
+            },
+            false,
+            {
+                temporary: true,
+            });
+            //let newItemLootFlags = newItemData.data.flags['simple-loot-sheet-fvtt'] || {};
+            //newItemLootFlags[MODULE_CONFIG.generatedFromKey] = pack.uuid;
+            newItems.push(newItemData.data);
         }
     }
 

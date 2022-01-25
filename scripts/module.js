@@ -78,11 +78,17 @@ export function iamResponsibleGM() {
         whoisResponsibleGM().id == game.user.id;
 }
 
-export function uuidFromClaimFlag(key) {
-    return key?.replace('claim-', '').replaceAll('_', '.');
+export function encodeUuidForFlag(uuid) {
+    return uuid?.replaceAll('.', '~');
+}
+export function decodeUuidFromFlag(flag) {
+    return flag?.replaceAll('~', '.');
+}
+export function uuidFromClaimFlag(flag) {
+    return decodeUuidFromFlag(flag?.replace('claim~', ''));
 }
 export function claimFlagFromUuid(uuid) {
-    return `claim-${uuid?.replaceAll('.', '_')}`;
+    return `claim~${encodeUuidForFlag(uuid)}`;
 }
 
 export async function handleSocketGm(message, userSenderId) {
@@ -194,7 +200,6 @@ function _onResetSceneLootClick(html) {
     MODULE_CONFIG.functions.reset(game.scenes.get(sceneId).tokens);
 }
 
-//Hooks.on('renderSceneNavigation', async (app, html, options) => {
 Hooks.on('getSceneNavigationContext', async (app, html, options) => {
     console.log('                   RENDER SCENE NAVIGATION');
     if (!game.user.isGM) return;
@@ -218,7 +223,7 @@ Hooks.on('getSceneNavigationContext', async (app, html, options) => {
 });
 
 
-// registerPartial was written by Lucas Straub#5006 on Foundry's Discord.
+// registerPartial was found in a message by Lucas Straub#5006 on Foundry's Discord.
 // https://discord.com/channels/170995199584108546/670336275496042502/781764805660770315
 function registerPartial(name, path) {
     fetch(path)
