@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config.js';
-import { claimFlagFromUuid, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
+import { claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
@@ -75,6 +75,36 @@ export async function findLootTable(actor) {
         // TODO: Try to regex-out Token Mold name changes?
     ;
     */
+}
+
+async function giveLootTo(itemData, recipientUuids, winnerUuid) {
+    winnerUuid = decodeUuidFromFlag(winnerUuid);
+    recipientUuids = recipientUuids.map(uuid => decodeUuidFromFlag(uuid));
+    console.log('recipientUuids', recipientUuids);
+
+    let quantityWinner = 1, quantityOthers = 0;
+    const itemQuantity = Math.floor(Number(itemData.data.quantity));
+    if (itemQuantity > 0) {
+        quantityOthers = Math.floor(itemQuantity / recipientUuids.length);
+        quantityWinner = quantityOthers + itemQuantity % recipientUuids.length;
+        console.log('quantity winner', quantityWinner, 'others', quantityOthers);
+    }
+
+    //console.log('recipientItemData', recipientItemData);
+    for (let recipientUuid of recipientUuids) {
+        console.log('recipientUuid', recipientUuid);
+        let parent = await fromUuid(recipientUuid);
+        parent = parent.actor || parent; // To make tokens and actors the "same".
+        mergeObject(itemData, {
+            data: {
+                quantity: recipientUuid == winnerUuid ? quantityWinner : quantityOthers,
+            },
+        });
+        let recipientItem = await Item.create(itemData, {
+            parent,
+        });
+        //console.log('recipientItem', recipientItem);
+    }
 }
 
 export class SimpleLootSheet extends ActorSheet {
@@ -243,8 +273,11 @@ export class SimpleLootSheet extends ActorSheet {
 
             // Roll among the prioritized set of claimants (needs beat greeds).
             let claimantIds = needs.length > 0 ? needs : greeds;
+            // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
 
+            // Pick a winner.
+            // TODO: Chat card, Dice So Nice, something else?
             const winnerUuid = uuidFromClaimFlag(claimantIds[Math.floor(Math.random() * claimantIds.length)]);
 
             let recipientItemData = duplicate(lootedItem);
@@ -257,14 +290,11 @@ export class SimpleLootSheet extends ActorSheet {
             if (recipientItemData.data.equipped === true) { // dnd5e, possibly other systems
                 recipientItemData.data.equipped = false;
             }
-            //console.log('recipientItemData', recipientItemData);
-            let parent = await fromUuid(winnerUuid);
-            parent = parent.actor || parent; // To make tokens and actors the "same".
-            let recipientItem = await Item.create(recipientItemData, {
-                parent,
-            });
-            //console.log('recipientItem', recipientItem);
 
+            giveLootTo(recipientItemData, claimantIds, winnerUuid);
+
+            // Mark the lootee's item as having been looted.
+            // TODO: Mark array of winners, not just single, due to stack-split wins?
             // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
             await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
         }

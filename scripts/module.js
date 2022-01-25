@@ -42,13 +42,13 @@ export async function reset(actor, {prompt=true} = {}) {
 
     // Skip players' characters.
     if (actor.hasPlayerOwner) {
-        ui.notifications.info(`${MODULE_CONFIG.nameHuman}: Loot reset skipped player-owned character ${actor.name}.`);
+        ui.notifications.info(`((${MODULE_CONFIG.nameHuman}: Loot reset skipped player-owned character ${actor.name}.))`);
         return;
     }
 
     let items = actor?.items;
     if (!items) {
-        ui.notifications.error(`${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.`);
+        ui.notifications.error(`((${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.))`);
         console.log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand:", actor);
         return;
     }
@@ -88,7 +88,7 @@ export function encodeUuidForFlag(uuid) {
     return uuid?.replaceAll('.', '~');
 }
 export function decodeUuidFromFlag(flag) {
-    return flag?.replaceAll('~', '.');
+    return flag?.replace('claim~','')?.replaceAll('~','.');
 }
 export function uuidFromClaimFlag(flag) {
     return decodeUuidFromFlag(flag?.replace('claim~', ''));
