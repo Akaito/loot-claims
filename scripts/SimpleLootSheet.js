@@ -301,13 +301,9 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         if (game.betterTables) {
-            //game.betterTables.addLootToSelectedToken(this);
-            let cloneTable = table.clone({}, {}, {temporary:true});
-            console.log(this);
-            console.log('   CLONE TABLE', cloneTable);
+            //game.betterTables.addLootToSelectedToken(this); // Nope; want to pass in item flags.
             //let result = await game.betterTables.addLootToSelectedToken(cloneTable, this.actor);
-            //console.log('  RESULT', result);
-            UseBetterTables(this.token, cloneTable);
+            UseBetterTables(this.token, table);
         }
         else {
             // TODO: UNIMPLEMENTED
@@ -317,7 +313,11 @@ export class SimpleLootSheet extends ActorSheet {
 }
 
 // Mostly from a macro I hadn't shared yet.
-async function UseBetterTables (token, table) {
+async function UseBetterTables (token, realTable) {
+    // Clone the table so we can do whatever without worry.
+    // Including just drawing without replacement.
+    let table = realTable.clone({}, {}, {temporary:true});
+
     //const brtBuilder = new BRTBuilder(table);
     //const results = await brtBuilder.betterRoll();
     //const br = new BetterResults(results);
@@ -329,38 +329,81 @@ async function UseBetterTables (token, table) {
     await lootCreator.addItemsToToken(token);
     */
 
-    if (table.getFlag('better-rolltables', 'table-type') != 'loot') {
-        ui.notifications.error('Only loot-type tables from Better Rolltables are supported at this time.');
-        return;
-    }
-
     const newLoot = {};
-    const brtBuilder = new BRTBuilder(table);
-    const results = await brtBuilder.betterRoll();
-    const brtResults = new BetterResults(results);
-    console.log('  BRT', brtBuilder, brtResults);
-    //const results = await game.betterTables.getBetterTableResults(table);
-    console.log('better table results:', results);
-    results.forEach(entry => {
-        const fullId = `${entry.data.collection}.${entry.data.resultId}`;
-        if (!(fullId in newLoot))
-            newLoot[fullId] = {
-                collection: entry.data.collection,
-                resultId: entry.data.resultId,
-                quantity: Number(0),
-                text: entry.data.text,
-            };
-        newLoot[fullId].quantity += Number(1);
-        //console.log('new quantity:', newLoot[fullId].quantity);
-    });
+    //const brtBuilder = new BRTBuilder(table);
+    //const results = await brtBuilder.betterRoll();
+    //const brtResults = new BetterResults(results);
+    //console.log('  BRT', brtBuilder, brtResults);
+
+    // TODO: Manually do draw-without-replacement if the table is flagged as such.
+    // Since drawing from a compendium table flagged as such doesn't work (never locks-out results).
+
+    let drawnItems = [];
+    for (let result of table.data.results) {
+        //console.log('result', result);
+        let collection = game.packs.get(result.data.collection);
+        /*
+        let lootItem = (await collection?.getDocument(result.data.resultId))?.clone({
+                data: {
+                    flags: {
+                        [MODULE_CONFIG.name]: {
+                            [MODULE_CONFIG.generatedFromKey]: realTable.uuid,
+                        },
+                    },
+                },
+            },
+            false,
+            {temporary:true});
+        */
+        let lootItem = duplicate(await collection?.getDocument(result.data.resultId));
+        //lootItem.data.data.quantity = 500;
+        mergeObject(lootItem, {
+            data: {
+                /*
+                data: {
+                    quantity: 500,
+                },
+                */
+                flags: {
+                    [MODULE_CONFIG.name]: {
+                        [MODULE_CONFIG.generatedFromKey]: realTable.uuid,
+                    },
+                },
+            },
+        });
+        //console.log('compendium lootItem', lootItem);
+        const brtFlags = result.data.flags['better-rolltables'];
+        //console.log('brtFlags', brtFlags);
+        if (brtFlags) {
+            const quantityFormula = brtFlags['brt-result-formula']?.formula;
+            //console.log('formula', quantityFormula);
+            console.log('are we even trying to get a quantity?', quantityFormula);
+            try {
+                let quantity = (await (new Roll(quantityFormula)).roll({async: true}))?.total;
+                console.log('quantity', quantity, lootItem.data.quantity);
+                if (quantity) {
+                    mergeObject(lootItem, {
+                        data: {
+                            quantity: Number(lootItem.data.quantity) * Number(quantity),
+                        },
+                    });
+                    //console.log('new quantity', lootItem.data.data.quantity);
+                }
+            }
+            catch (e) {console.error(e);}
+        }
+        drawnItems.push(lootItem);
+    }
+    //console.log('drawn items', drawnItemsData);
 
     const preExistingItems = token.actor.getEmbeddedCollection('Item');
     const itemUpdates = [];
     const newItems = [];
     // Figure out whether each loot entry is already present on the receiving
     // token, or is totally new to it.  How we add it differs depending on that.
-    for (const loot of Object.values(newLoot)) {
-        console.log(loot);
+    for (const lootItem of drawnItems) {
+        //console.log(lootItemData);
+        /*
         // TODO: Don't assume the loot table's contents is a Compendium item.
         // (Thanks to Discord Crymic#9452 for help with compendium/pack access.)
         // https://discord.com/channels/170995199584108546/699750150674972743/897045003526869012
@@ -371,13 +414,14 @@ async function UseBetterTables (token, table) {
             ui.notifications.error(`No such compendium item: ${loot.collection}.${loot.resultId} (${loot.text}).`);
             continue;
         }
+        */
 
-        // TODO: If we've already imported the item to this world (compare by name?), use that instead.
+        // TODO?: If we've already imported the item to this world (compare by name?), use that instead.
 
         // Consider a pre-existing item on the actor to be the same as this new
         // loot item if its type and name match.  Imperfect, but might be the most
         // sane means without being _too_ restrictive.
-        const actorItem = preExistingItems.find(actorItem => actorItem.type == packItem.type && actorItem.name == packItem.name);
+        const actorItem = preExistingItems.find(actorItem => actorItem.type == lootItem.type && actorItem.name == lootItem.name);
         // If the actor already has the item, just increase its quantity.
         if (actorItem) {
             /*
@@ -390,42 +434,39 @@ async function UseBetterTables (token, table) {
                 _id: actorItem.id,
                 id: actorItem.id,
                 data: {
-                    quantity: Number(actorItem.data.data.quantity) + Number(loot.quantity),
+                    quantity: Number(actorItem.data.data.quantity) + Number(lootItem.data.quantity),
                 },
             });
         }
         // Otherwise, we need to make a new one.
         else {
-            console.log('making new item from packItem', packItem, table);
-            let newItemData = packItem.clone({
+            console.log('making new item from packItem', lootItem, table);
+            mergeObject(lootItem, {
                 data: {
-                    quantity: Number(loot.quantity),
-                    //data: {
-                    //},
+                    quantity: Number(lootItem.data.quantity),
                 },
-                        flags: {
-                            'simple-loot-sheet-fvtt': {
-                                'source-item': encodeUuidForFlag(packItem.uuid),
-                                'generated-from': encodeUuidForFlag(table.uuid),
-                            },
-                        },
-            },
-            false,
-            {
-                temporary: true,
+                flags: {
+                    'simple-loot-sheet-fvtt': {
+                        //'source-item': encodeUuidForFlag(lootItemData.uuid),
+                        'generated-from': encodeUuidForFlag(table.uuid),
+                    },
+                },
             });
             //let newItemLootFlags = newItemData.data.flags['simple-loot-sheet-fvtt'] || {};
             //newItemLootFlags[MODULE_CONFIG.generatedFromKey] = pack.uuid;
-            newItems.push(newItemData.data);
+            newItems.push(lootItem);
         }
     }
 
     //console.log('itemUpdates', itemUpdates);
-    //console.log('newItems', newItems);
+    console.log('newItems', newItems);
 
     // Update quantities.
     await token.actor.updateEmbeddedDocuments('Item', itemUpdates);
     // Create items.
-    await token.actor.createEmbeddedDocuments('Item', newItems);
-    await table.reset();
+    //await token.actor.createEmbeddedDocuments('Item', newItems);
+    await Item.createDocuments(newItems/*.map(item => item.data)*/, {
+        parent: token.actor,
+    });
+    //await table.reset(); // No point; it's a cloned table.
 }
