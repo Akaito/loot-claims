@@ -40,6 +40,12 @@ export async function reset(actor, {prompt=true} = {}) {
     }
     actor = actor?.actor || actor; // In case we were given a token.
 
+    // Skip players' characters.
+    if (actor.hasPlayerOwner) {
+        ui.notifications.info(`${MODULE_CONFIG.nameHuman}: Loot reset skipped player-owned character ${actor.name}.`);
+        return;
+    }
+
     let items = actor?.items;
     if (!items) {
         ui.notifications.error(`${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.`);
