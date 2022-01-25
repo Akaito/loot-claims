@@ -11,6 +11,10 @@
     */
 }
 
+.simple-loot-sheet-app .gm-header .reset-loot {
+    width: 30%;
+}
+
 .simple-loot-sheet-table tr {
     height: var(--simple-loot-sheet-img-size);
     min-height: var(--simple-loot-sheet-img-size);

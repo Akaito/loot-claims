@@ -39,7 +39,7 @@ export class SimpleLootSheet extends ActorSheet {
     static get defaultOptions() {
         return mergeObject(super.defaultOptions, {
             width: 700,
-            height: 430,
+            height: 'auto',
             classes: [MODULE_CONFIG.ns, 'sheet', 'actor'],
         });
     }
