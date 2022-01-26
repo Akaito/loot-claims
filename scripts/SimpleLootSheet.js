@@ -162,6 +162,7 @@ export class SimpleLootSheet extends ActorSheet {
         html.find('.player-claims').click(this._onClaimClick.bind(this));
         html.find('.reset-loot').click(this._onResetLootClick.bind(this));
         html.find('.add-loot-table').click(this._onAddLootTableClick.bind(this));
+        html.find('.give-permissions').click(this._onGivePermissionsClick.bind(this));
         html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
 
         super.activateListeners(html);
@@ -270,6 +271,44 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         makeClaim(claimantUuid, claimType, item.uuid);
+    }
+
+    async _onGivePermissionsClick(event) {
+        event.preventDefault();
+        let activePlayers = game.users.filter(user => !user.isGM && user.active);
+        if (activePlayers.length <= 0) return;
+        let activePlayerIds = activePlayers.map(u=>u.id);
+
+        let permissions = {};
+        Object.assign(permissions, this.token.actor.data.permission);
+        /*
+        activePlayerIds.forEach(user => {
+            permissions[user.data._id] = 2;
+        });
+        */
+        for (let id of activePlayerIds) {
+            permissions[id] = 2; // TODO: Take the greater permission of this or existing.
+        }
+        console.log('new permissions', permissions);
+        //console.log('Permissions:', permissions);
+        console.log('token comparison', this.token, canvas.tokens.controlled[0].document);
+        await this.token.modifyActorDocument({
+            //overlayEffect: 'icons/svg/chest.svg',
+            permission: permissions,
+            /*
+            "actorData": {
+                "actor": {
+                    "flags": {
+                        "loot": {
+                            "playersPermission": 2, // for LootSheetNpc5e
+                        },
+                    },
+                },
+                "permission": permissions
+            }
+            */
+        });
+        console.log('permissions after application', this.actor.data.permission);
     }
 
     async _onDistributeLootClick(event) {

@@ -10,6 +10,7 @@
     "simple-loot-sheet-fvtt.addLootTable": "Add Loot from Table",
     "simple-loot-sheet-fvtt.addLootTableEmphasized": "Add",
     "simple-loot-sheet-fvtt.distributeLoot": "Distribute Loot",
+    "simple-loot-sheet-fvtt.givePermissions": "Give Permissions",
     "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
 
     "simple-loot-sheet-fvtt.confirmResetMessage": "Reset all claimed loot?",
