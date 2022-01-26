@@ -1,5 +1,6 @@
 :root {
     --simple-loot-sheet-img-size: 36px;
+    --simple-loot-sheet-looted-quantity-size: 12px;
 }
 
 .simple-loot-sheet-app .gm-header {
@@ -13,6 +14,23 @@
 
 .simple-loot-sheet-app .gm-header button {
     /* width: 25%; */
+}
+
+.simple-loot-sheet-app .claimant-image-container {
+    position: relative;
+    display: inline-block;
+}
+.simple-loot-sheet-app .claimant-image-container .looted-quantity {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.8em;
+
+    width: var(--simple-loot-sheet-looted-quantity-size);
+    height: var(--simple-loot-sheet-looted-quantity-size);
+    background-color: yellow;
+    /* aspect-ratio: 1 / 1; not supported yet */
+    border-radius: 50%;
 }
 
 .simple-loot-sheet-table tr {
@@ -54,6 +72,11 @@ This still lets the table contents slide up above the table, visible above the h
     justify-content: center;
     align-items: center;
     text-align: center;
+    transition: all 0.25s ease-in-out;
+}
+.simple-loot-sheet-table .player-claims:hover {
+    /* TODO */
+    background-color: turquoise;
 }
 .simple-loot-sheet-table .player-claims * {
     margin: 0 auto;
