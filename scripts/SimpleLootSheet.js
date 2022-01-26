@@ -279,15 +279,13 @@ export class SimpleLootSheet extends ActorSheet {
         if (activePlayers.length <= 0) return;
         let activePlayerIds = activePlayers.map(u=>u.id);
 
+        // Upgrade player permissions to Observer so they can see/use the sheet.
+        // TODO: Try out Limited.
         let permissions = {};
         Object.assign(permissions, this.token.actor.data.permission);
-        /*
-        activePlayerIds.forEach(user => {
-            permissions[user.data._id] = 2;
-        });
-        */
         for (let id of activePlayerIds) {
-            permissions[id] = 2; // TODO: Take the greater permission of this or existing.
+            // Upgrade permissions.  Be sure we never lower them.
+            permissions[id] = Math.max(2, permissions[id] ? Number(permissions[id]) : 0);
         }
         console.log('new permissions', permissions);
         //console.log('Permissions:', permissions);

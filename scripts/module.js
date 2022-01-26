@@ -49,7 +49,7 @@ export async function reset(actor, {prompt=true} = {}) {
     let items = actor?.items;
     if (!items) {
         ui.notifications.error(`((${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.))`);
-        console.log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand:", actor);
+        console.log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand (has no .items):", actor);
         return;
     }
 
@@ -59,18 +59,20 @@ export async function reset(actor, {prompt=true} = {}) {
         //console.log('should attempt reset on', item, item.name, item.data?.flags);
         const ourFlags = item.data?.flags[MODULE_CONFIG.name];
         if (ourFlags) {
+            console.log('generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
             if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
                 toBeDeleted.push(item.id);
                 // TODO: Don't just reset loot like this, but remove it.  Keeping this here for now for quicker testing.
-                updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+                //updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
             }
             else {
-                updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+                updates.push({_id: item.id, [`flags.${MODULE_CONFIG.name}`]: null});
             }
         }
     }
     //console.log('pushing updates', updates);
     await actor.updateEmbeddedDocuments('Item', updates);
+    await actor.deleteEmbeddedDocuments('Item', toBeDeleted);
 }
 
 /// Just need a single GM; doesn't matter who.  So find the active GM user with the lowest ID.
