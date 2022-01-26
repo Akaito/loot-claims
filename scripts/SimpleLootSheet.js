@@ -216,8 +216,8 @@ export class SimpleLootSheet extends ActorSheet {
 
                 let claimant = {
                     uuid: claimantUuid,
-                    name: actor.name,
-                    img: actor.img,
+                    name: actor.token?.name || actor.name,
+                    img: actor.token?.data?.img || actor.img,
                     winner: lootedByUuid == claimantUuid,
                 };
                 switch (value) {
