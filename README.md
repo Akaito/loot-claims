@@ -14,8 +14,9 @@ TODO/NEXT:
 - [x] Button on scene right-click to reset looted flags.
 - [ ] If loot quantity is _less_ than number of claimants, randomly choose who-all gets one.
       Instead of current, where winner always gets remainder (all, in such a case).
+- [ ] Fix loot reset.
 - [ ] If multiple owned tokens are controlled, all mark claims (GM convenience thing).
-- [ ] Resetting loot also reset gained items from looting if the actor is unlinked?
+- [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Test distributing loot from a linked actor.
 - [ ] Use libwrapper.
 - [ ] Implement "Steal"?  Future feature _maybe_.

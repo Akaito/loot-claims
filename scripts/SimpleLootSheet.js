@@ -77,30 +77,67 @@ export async function findLootTable(actor) {
     */
 }
 
-async function giveLootTo(itemData, recipientUuids, winnerUuid) {
-    winnerUuid = decodeUuidFromFlag(winnerUuid);
-    recipientUuids = recipientUuids.map(uuid => decodeUuidFromFlag(uuid));
-    console.log('recipientUuids', recipientUuids);
-
-    let quantityWinner = 1, quantityOthers = 0;
-    const itemQuantity = Math.floor(Number(itemData.data.quantity));
-    if (itemQuantity > 0) {
-        quantityOthers = Math.floor(itemQuantity / recipientUuids.length);
-        quantityWinner = quantityOthers + itemQuantity % recipientUuids.length;
-        console.log('quantity winner', quantityWinner, 'others', quantityOthers);
+/// In-place shuffle.
+/// From https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array/6274381#6274381
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; 0 < i; --i) {
+        const j = Math.floor(Math.random() * (i+1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
+    return arr;
+}
+
+async function giveLootTo(itemData, claimantUuids, winnerUuid) {
+    winnerUuid = decodeUuidFromFlag(winnerUuid);
+    claimantUuids = claimantUuids.map(uuid => decodeUuidFromFlag(uuid));
+    console.log('claimantUuids', claimantUuids);
+
+    let quantityWinner = 1, quantityOthers = 0, oneAtATime = false;
+    // Typical case for a singular item, or a stack of items sufficient for everyone to get one.
+    const itemQuantity = Math.floor(Number(itemData.data.quantity));
+    if (1 < itemQuantity) {
+        // Not enough for everyone to get at least 1: hand them out one at a time.
+        if (itemQuantity < claimantUuids.length) {
+            // Special-case a stack greater than 1, but less than the number of claimants/recipients.
+            // Behavior above always has the winner getting the remainder, or what would be the whole
+            // stack in this case.  Instead, we'd want to hand out singles to a random subset of all claimants.
+            // TODO: Adjust how we choose and mark winners, so it's all in one place (the caller of giveLootTo maybe).
+            oneAtATime = true;
+            claimantUuids = shuffleArray(claimantUuids);
+        }
+        // Enough for everyone to get at least 1: winner takes the remainder.
+        else {
+            quantityOthers = Math.floor(itemQuantity / claimantUuids.length);
+            quantityWinner = quantityOthers + itemQuantity % claimantUuids.length;
+        }
+    }
+    console.log('quantity winner', quantityWinner, 'others', quantityOthers, 'one at a time?', oneAtATime);
 
     //console.log('recipientItemData', recipientItemData);
-    for (let recipientUuid of recipientUuids) {
-        console.log('recipientUuid', recipientUuid);
+    for (const [recipientUuidIndex, recipientUuid] of claimantUuids.entries()) {
+        //console.log('recipientUuid', recipientUuid);
         let parent = await fromUuid(recipientUuid);
         parent = parent.actor || parent; // To make tokens and actors the "same".
-        mergeObject(itemData, {
-            data: {
-                quantity: recipientUuid == winnerUuid ? quantityWinner : quantityOthers,
-            },
-        });
-        let recipientItem = await Item.create(itemData, {
+        if (!oneAtATime) {
+            const currentlyAtWinner = recipientUuid == winnerUuid;
+            if (!currentlyAtWinner && quantityOthers == 0) continue;
+            mergeObject(itemData, {
+                data: {
+                    quantity: currentlyAtWinner ? quantityWinner : quantityOthers,
+                },
+            });
+        }
+        // Special case of handing out a stack of size < claimant count; giving one to a random subset.
+        else {
+            // Stop if we've already handed all the items out.
+            if (recipientUuidIndex + 1 > itemQuantity) break;
+            mergeObject(itemData, {
+                data: {
+                    quantity: 1,
+                },
+            });
+        }
+        const recipientItem = await Item.create(itemData, {
             parent,
         });
         //console.log('recipientItem', recipientItem);

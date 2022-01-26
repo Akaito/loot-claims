@@ -61,6 +61,8 @@ export async function reset(actor, {prompt=true} = {}) {
         if (ourFlags) {
             if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
                 toBeDeleted.push(item.id);
+                // TODO: Don't just reset loot like this, but remove it.  Keeping this here for now for quicker testing.
+                updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
             }
             else {
                 updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
