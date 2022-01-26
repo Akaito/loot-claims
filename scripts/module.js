@@ -113,6 +113,8 @@ export async function handleSocketGm(message, userSenderId) {
             const {claimType, claimantUuid, itemUuid} = message;
             let item = await fromUuid(itemUuid);
             console.log('item being claimed', item);
+            // Don't allow changing claims after item has already been looted.
+            if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
 
             const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
 
@@ -130,7 +132,7 @@ export async function handleSocketGm(message, userSenderId) {
                 //console.log('SET claim');
                 item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
             }
-            break;
+            return;
         }
     }
 }
