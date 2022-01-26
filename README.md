@@ -10,15 +10,19 @@
 
 ---
 TODO/NEXT:
-- [x] Distribute loot.
-- [x] Button on scene right-click to reset looted flags.
-- [ ] Fix loot reset.
+- [ ] Badge on claimants showing looted quantity.
 - [ ] If multiple owned tokens are controlled, all mark claims (GM convenience thing).
 - [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Test distributing loot from a linked actor.
 - [ ] Use libwrapper.
 - [ ] Have some settings.
-      Like lot reset confirmation.  And distribution style (winner gets remainder vs. remainder spread out).
+      - [ ] Loot reset confirmation.
+      - [ ] Distribution style (winner gets remainder vs. remainder spread out; latter should be default).
+      - [ ] Option to auto-distribute item once all active players have set their claim?
+            Or marked themselves on the whole sheet as being "ready"?  (Would introduce actor flags.)
+- [ ] Replaceable functions where they're system-specific.
+      Set them in MODULE_CONFIG.functions, and call them from there.  Others can replace them.
+- [ ] Dialog to pick loot table if multiple look viable.
 - [ ] Implement "Steal"?  Future feature _maybe_.
 ---
 
