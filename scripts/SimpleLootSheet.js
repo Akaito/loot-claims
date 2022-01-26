@@ -512,10 +512,12 @@ async function UseBetterTables (token, realTable) {
         if (lootItem.name.startsWith('Broken')) {
             const actorItemUnbroken = preExistingItems.find(actorItem => {
                 const nameGood = `Broken ${actorItem.name}` == lootItem.name;
-                console.log('not-broken search', actorItem.name, lootItem.name, nameGood);
-                return actorItem.type == lootItem.type && nameGood;
+                //console.log('not-broken search', actorItem.name, lootItem.name, nameGood, actorItem.type, lootItem.type, actorItem.type == lootItem.type);
+                //return actorItem.type == lootItem.type && nameGood;
+                return nameGood; // Don't compare item types.  Broken versions are likely to be loot or something; instead of equipment.
             });
-            if (actorItemUnbroken && actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
+            console.log('unbroken item is', actorItemUnbroken);
+            if (actorItemUnbroken && !actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
                 itemUpdates.push({
                     _id: actorItemUnbroken.id,
                     id: actorItemUnbroken.id,
