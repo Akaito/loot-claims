@@ -291,22 +291,14 @@ export class SimpleLootSheet extends ActorSheet {
         }
         console.log('new permissions', permissions);
         //console.log('Permissions:', permissions);
+        console.log(this);
         console.log('token comparison', this.token, canvas.tokens.controlled[0].document);
+        // TODO: Do these updates together.
+        await this.token.update({
+            overlayEffect: 'icons/svg/chest.svg',
+        });
         await this.token.modifyActorDocument({
-            //overlayEffect: 'icons/svg/chest.svg',
             permission: permissions,
-            /*
-            "actorData": {
-                "actor": {
-                    "flags": {
-                        "loot": {
-                            "playersPermission": 2, // for LootSheetNpc5e
-                        },
-                    },
-                },
-                "permission": permissions
-            }
-            */
         });
         console.log('permissions after application', this.actor.data.permission);
     }
