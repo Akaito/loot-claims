@@ -1,12 +1,11 @@
 {
-
   "name": "simple-loot-sheet-fvtt",
   "title": "Simple Loot Sheet",
   "description": "lootsheetnpc5e kept breaking on me.  Here's an attempt at something simpler.",
   "version": "This is auto replaced",
   "library": "false",
   "minimumCoreVersion": "9",
-  "compatibleCoreVersion": "9.242",
+  "compatibleCoreVersion": "9.245",
   "authors": [
     {
       "name": "The League of Extraordinary FVTT Developers",
@@ -22,7 +21,6 @@
       { "name": "lib-wrapper" }
   ],
   "conflicts": [
-    
   ],
   "esmodules": [
     "/scripts/config.js",
