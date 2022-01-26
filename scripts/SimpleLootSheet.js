@@ -183,6 +183,7 @@ export class SimpleLootSheet extends ActorSheet {
             if (item.data?.data?.weaponType == 'natural') continue;
             if (item.data?.data?.armor?.type == 'natural') continue;
             if (MODULE_CONFIG.excludedItemTypes.includes(item.type)) continue;
+            if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
 
             const ourFlags = item.data.flags[MODULE_CONFIG.name];
             console.log('           QUANTITY', item);
@@ -199,6 +200,7 @@ export class SimpleLootSheet extends ActorSheet {
 
             for (const key of Object.keys(ourFlags)) {
                 if (!key.startsWith('claim~')) continue;
+
                 const value = ourFlags[key];
                 const claimantUuid = uuidFromClaimFlag(key);
                 let actor = await fromUuid(claimantUuid);
@@ -469,6 +471,8 @@ async function UseBetterTables (token, realTable) {
     // Figure out whether each loot entry is already present on the receiving
     // token, or is totally new to it.  How we add it differs depending on that.
     for (const lootItem of drawnItems) {
+        // TODO: Consider localization.  Both the word, and the name structure.
+        const isBrokenItem = lootItem.name.startsWith('Broken ');
         //console.log(lootItemData);
         /*
         // TODO: Don't assume the loot table's contents is a Compendium item.
@@ -488,32 +492,51 @@ async function UseBetterTables (token, realTable) {
         // Consider a pre-existing item on the actor to be the same as this new
         // loot item if its type and name match.  Imperfect, but might be the most
         // sane means without being _too_ restrictive.
-        const actorItem = preExistingItems.find(actorItem => actorItem.type == lootItem.type && actorItem.name == lootItem.name);
+        const existingItem = preExistingItems.find(actorItem => actorItem.type == lootItem.type && actorItem.name == lootItem.name);
         // If the actor already has the item, just increase its quantity.
-        if (actorItem) {
-            /*
-            console.log(actorItem);
-            console.log('found pre-existing item');
-            console.log('actorItem', actorItem);
-            console.log('loot', loot);
-            */
-            itemUpdates.push({
-                _id: actorItem.id,
-                id: actorItem.id,
-                data: {
-                    quantity: Number(actorItem.data.data.quantity) + Number(lootItem.data.quantity),
-                },
-            });
+        if (existingItem) {
+            // Not gaining a Broken version of an existing item: just increase existing quantity.
+            //if (!actorItemUnbroken || actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
+            if (existingItem) {
+                itemUpdates.push({
+                    _id: existingItem.id,
+                    id: existingItem.id,
+                    data: {
+                        quantity: Number(existingItem.data.data.quantity) + Number(lootItem.data.quantity),
+                    },
+                });
+            }
         }
-        // Otherwise, we need to make a new one.
-        else {
+
+        // Need to hide the existing, not-broken version if it isn't already.
+        if (lootItem.name.startsWith('Broken')) {
+            const actorItemUnbroken = preExistingItems.find(actorItem => {
+                const nameGood = `Broken ${actorItem.name}` == lootItem.name;
+                console.log('not-broken search', actorItem.name, lootItem.name, nameGood);
+                return actorItem.type == lootItem.type && nameGood;
+            });
+            if (actorItemUnbroken && actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
+                itemUpdates.push({
+                    _id: actorItemUnbroken.id,
+                    id: actorItemUnbroken.id,
+                    flags: {
+                        [MODULE_CONFIG.name]: {
+                            [MODULE_CONFIG.hiddenKey]: 'broken', // TODO: Use some thought-out value.
+                        },
+                    },
+                });
+            }
+        }
+
+        // Make a new one if it doesn't exist yet.
+        if (!existingItem) {
             console.log('making new item from packItem', lootItem, table);
             mergeObject(lootItem, {
                 data: {
                     quantity: Number(lootItem.data.quantity),
                 },
                 flags: {
-                    'simple-loot-sheet-fvtt': {
+                    [MODULE_CONFIG.name]: {
                         //'source-item': encodeUuidForFlag(lootItemData.uuid),
                         'generated-from': encodeUuidForFlag(table.uuid),
                     },

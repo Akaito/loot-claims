@@ -35,4 +35,5 @@ export const MODULE_CONFIG = {
     lootedFromNameKey: 'looted-from-name',
 
     generatedFromKey: 'generated-from',
+    hiddenKey: 'hidden',
 };
