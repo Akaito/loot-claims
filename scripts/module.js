@@ -101,9 +101,16 @@ export function claimFlagFromUuid(uuid) {
     return `claim~${encodeUuidForFlag(uuid)}`;
 }
 
+/// Pass to an array's `.filter()` to unique-ify it.
+///
+/// From https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates#14438954
+export function unique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
 export async function handleSocketGm(message, userSenderId) {
     //console.log('handleSocketGm()');
-    console.log('Got a socket event', message, 'from', userSenderId);
+    console.log('Got a socket event from', userSenderId, message);
     //console.log('responsible GM is', whoisResponsibleGM());
     if (!iamResponsibleGM()) return;
     //console.log("  I'm the responsible GM");
@@ -111,27 +118,43 @@ export async function handleSocketGm(message, userSenderId) {
     switch (message.type) {
         // Set claim to the specified value, or clear it if they're the same.
         case MODULE_CONFIG.messageTypes.CLAIM_REQUEST: {
-            const {claimType, claimantUuid, itemUuid} = message;
+            const {claimType, claimantUuids, itemUuid} = message;
+            if (!MODULE_CONFIG.claimTypes.includes(claimType)) {
+                console.error(MODULE_CONFIG.name, `Invalid claim type [${claimType}].  Not one of [${MODULE_CONFIG.claimTypes}].`);
+                return;
+            }
             let item = await fromUuid(itemUuid);
             console.log('item being claimed', item);
             // Don't allow changing claims after item has already been looted.
             if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
 
-            const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
+            let claims = item.getFlag(MODULE_CONFIG.name, claimType) || [];
+            claims.push(...claimantUuids);
+            claims = claims.filter(unique);
+            await item.setFlag(MODULE_CONFIG.name, claimType, claims);
+            console.log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
 
-            // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
-            // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
-            // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
-            // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
-            if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
-                //console.log('UNSET claim');
-                //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
-                item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
-                //console.log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
-            }
-            else {
-                //console.log('SET claim');
-                item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
+            for (let claimantUuid of claimantUuids) {
+                const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
+
+                //flagUpdates
+
+                /*
+                // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
+                // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
+                // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
+                // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
+                if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
+                    //console.log('UNSET claim');
+                    //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
+                    item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
+                    //console.log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
+                }
+                else {
+                    //console.log('SET claim');
+                    item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
+                }
+                */
             }
             return;
         }

@@ -7,13 +7,13 @@ import { claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketG
 /// - https://discord.com/channels/170995199584108546/903652184003055677/903693659051008040
 /// - https://discord.com/channels/170995199584108546/811676497965613117/903652184003055677
 /// - https://discord.com/channels/170995199584108546/670336275496042502/835549329598840903
-async function makeClaim(claimantUuid, claimType, itemUuid) {
-    console.log('makeClaim()', claimantUuid, claimType, itemUuid);
+async function makeClaim(claimantUuids, claimType, itemUuid) {
+    console.log('makeClaim()', claimantUuids, claimType, itemUuid);
 
     const message = {
         type: MODULE_CONFIG.messageTypes.CLAIM_REQUEST,
         claimType,
-        claimantUuid,
+        claimantUuids,
         itemUuid,
     };
     // TODO: Make this true only if we're the responsible GM.  Not just any GM.
@@ -300,15 +300,7 @@ export class SimpleLootSheet extends ActorSheet {
             return;
         }
 
-        for (let claimantUuid of claimantUuids) {
-            if (!claimantUuid) continue; // Unexpected, but just in case.
-            //ui.notifications.error(game.i18n.format(`${MODULE_CONFIG.name}.badClaimantUuid`, claimantUuids));
-
-            // TODO: Make this function and its message accept an array of claimants.
-            //       Instead of sending one message for each.
-            await makeClaim(claimantUuid, claimType, item.uuid);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+        await makeClaim(claimantUuids, claimType, item.uuid);
     }
 
     async _onGivePermissionsClick(event) {

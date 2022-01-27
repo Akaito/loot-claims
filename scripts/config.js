@@ -17,6 +17,13 @@ export const MODULE_CONFIG = {
         CLAIM_REQUEST: 'claim-request',
     },
 
+    /// In order of descending priority.
+    claimTypes: [
+        'need',
+        'greed',
+        'pass',
+    ],
+
     userRoles: [
         undefined,
         'Player',
