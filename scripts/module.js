@@ -102,12 +102,11 @@ export function claimFlagFromUuid(uuid) {
 }
 
 export async function handleSocketGm(message, userSenderId) {
-    console.log('handleSocketGm()');
-    console.log('Got a socket event:', message);
-    console.log('With userSenderId:', userSenderId);
-    console.log('responsible GM is', whoisResponsibleGM());
+    //console.log('handleSocketGm()');
+    console.log('Got a socket event', message, 'from', userSenderId);
+    //console.log('responsible GM is', whoisResponsibleGM());
     if (!iamResponsibleGM()) return;
-    console.log("  I'm the responsible GM");
+    //console.log("  I'm the responsible GM");
 
     switch (message.type) {
         // Set claim to the specified value, or clear it if they're the same.

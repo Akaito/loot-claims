@@ -5,18 +5,18 @@
 
     {{#if isGM}}
     <div class="gm-header">
-        <button class="reset-loot">{{localize 'simple-loot-sheet-fvtt.resetLoot'}}</button>
+        <button class="reset-loot"><i class="fas fa-trash"></i>{{localize 'simple-loot-sheet-fvtt.resetLoot'}}</button>
         <!--
         <select name="data.flags.simple-loot-sheet-fvtt" title="((loot table))">
         </select>
         -->
         {{#if lootTable}}
-            <button class="add-loot-table" data-roll-table-uuid="{{lootTable.uuid}}">{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</button>
+            <button class="add-loot-table" data-roll-table-uuid="{{lootTable.uuid}}"><i class="fas fa-th-list"></i>{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</button>
         {{else}}
-            <button disabled><s>{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</s>&nbsp;({{localize 'simple-loot-sheet-fvtt.noneFound'}})</button>
+            <button disabled><s><i class="fas fa-th-list"></i>{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</s>&nbsp;({{localize 'simple-loot-sheet-fvtt.noTable'}})</button>
         {{/if}}
-        <button class="give-permissions">{{localize 'simple-loot-sheet-fvtt.givePermissions'}}</button>
-        <button class="distribute-loot">{{localize 'simple-loot-sheet-fvtt.distributeLoot'}}</button>
+        <button class="give-permissions"><i class="fas fa-share-alt"></i>{{localize 'simple-loot-sheet-fvtt.givePermissions'}}</button>
+        <button class="distribute-loot"><i class="fas fa-coins"></i>{{localize 'simple-loot-sheet-fvtt.distributeLoot'}}</button>
     </div>
     {{/if}}
 

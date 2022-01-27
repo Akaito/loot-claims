@@ -87,14 +87,44 @@ function shuffleArray(arr) {
     return arr;
 }
 
-async function giveLootTo(itemData, claimantUuids, winnerUuid) {
+async function giveLootTo(sourceActor, sourceItem, claimantUuids) {
+    if (claimantUuids.length <= 0) return;
+
+    //console.log('sourceItem', sourceItem);
+    // Shuffle the claimant array so we can have a random order in which people get the loot.
+    // Also ensure we were given UUIDs, not claim flags.  `uuidFromClaimFlag()` is idemptotent.
+    // TODO: Chat card, Dice So Nice, something else?
+    claimantUuids = shuffleArray(claimantUuids).map(uuid => uuidFromClaimFlag(uuid));
+
+    // Figure out who's getting how much of the loot.
+    // We don't deal in fractional quantities.
+    const sourceItemQuantity = Math.floor(Number(sourceItem.data?.data?.quantity)) || 1;
+    const quantityRemainder = sourceItemQuantity % claimantUuids.length; // dnd5e
+    const quantityEvenlySharable = Math.floor(sourceItemQuantity / claimantUuids.length);
+
+    return;
+    // Pick a winner.
+    const winnerUuid = uuidFromClaimFlag(claimantUuids[Math.floor(Math.random() * claimantUuids.length)]);
+
+    let newItemData = duplicate(sourceItem);
+    console.log('newItemData', newItemData);
+    // Clear claim keys, and set where the item we're handing out came from.
+    newItemData.flags[MODULE_CONFIG.name] = {
+        'looted-from-uuid': sourceActor.uuid,
+        'looted-from-name': sourceActor.name,
+    };
+    // The recipient's new item shouldn't be equipped, since it's just been looted.
+    if (recipientItemData.data?.equipped === true) { // dnd5e, possibly other systems TODO: move to module config handles
+        recipientItemData.data.equipped = false;
+    }
+
     winnerUuid = decodeUuidFromFlag(winnerUuid);
     claimantUuids = claimantUuids.map(uuid => decodeUuidFromFlag(uuid));
     console.log('claimantUuids', claimantUuids);
 
     let quantityWinner = 1, quantityOthers = 0, oneAtATime = false;
     // Typical case for a singular item, or a stack of items sufficient for everyone to get one.
-    const itemQuantity = Math.floor(Number(itemData.data.quantity));
+    const itemQuantity = Math.floor(Number(newItemData.data.quantity));
     if (1 < itemQuantity) {
         // Not enough for everyone to get at least 1: hand them out one at a time.
         if (itemQuantity < claimantUuids.length) {
@@ -121,7 +151,7 @@ async function giveLootTo(itemData, claimantUuids, winnerUuid) {
         if (!oneAtATime) {
             const currentlyAtWinner = recipientUuid == winnerUuid;
             if (!currentlyAtWinner && quantityOthers == 0) continue;
-            mergeObject(itemData, {
+            mergeObject(newItemData, {
                 data: {
                     quantity: currentlyAtWinner ? quantityWinner : quantityOthers,
                 },
@@ -131,17 +161,22 @@ async function giveLootTo(itemData, claimantUuids, winnerUuid) {
         else {
             // Stop if we've already handed all the items out.
             if (recipientUuidIndex + 1 > itemQuantity) break;
-            mergeObject(itemData, {
+            mergeObject(newItemData, {
                 data: {
                     quantity: 1,
                 },
             });
         }
-        const recipientItem = await Item.create(itemData, {
+        const recipientItem = await Item.create(newItemData, {
             parent,
         });
         //console.log('recipientItem', recipientItem);
     }
+
+    // Mark the lootee's item as having been looted.
+    // TODO: Mark array of winners, not just single, due to stack-split wins?
+    // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
+    await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
 }
 
 export class SimpleLootSheet extends ActorSheet {
@@ -212,7 +247,7 @@ export class SimpleLootSheet extends ActorSheet {
                 actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
 
                 let lootedByUuid = uuidFromClaimFlag(ourFlags[MODULE_CONFIG.lootedByKey]);
-                console.log('looted by', lootedByUuid, 'we are', claimantUuid);
+                console.log(item.name, 'looted by', lootedByUuid, 'we are', claimantUuid);
 
                 let claimant = {
                     uuid: claimantUuid,
@@ -240,37 +275,40 @@ export class SimpleLootSheet extends ActorSheet {
         //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
-        let flags = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {};
+        let itemLootFlags = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {};
         //console.log('item', item);
-        //console.log('flags', flags);
+        //console.log('itemLootFlags', itemLootFlags);
 
         const claimType = element.closest('.player-claims').dataset.claimType;
 
         // TODO: If more than one token is controlled, make claims from all of them?
         const selectedOwnedToken = canvas.tokens.controlled.filter(t=>t.isOwner)[0];
-        const claimantUuid =
-            // A selected, owned token has top priority as being the claimant.
-            // For example, if a player is controlling themselves and a sidekick or
-            // another, absent player, they can pick which one is making the claim.
-            selectedOwnedToken?.actor?.uuid ||
-            // If no owned token is selected, fall back to the user's assigned character.
-            (game.user.character ? `Actor.${game.user.character.id}` : undefined);
-        console.log('claimant', claimantUuid);
-        if (!claimantUuid) {
-            //console.log('No claimant available.  Tried user\'s character and a controlled token.');
+        console.log('old claimant choice', selectedOwnedToken?.actor?.id);
+        let claimantUuids = canvas.tokens.controlled // Prefer currently-selected tokens.
+            .filter(token => token.isOwner)
+            .map(token => token.actor?.uuid)
+            .filter(uuid => uuid != undefined)
+            // Don't make a claim again if we already have one of the same type being asked for.
+            .filter(uuid => itemLootFlags[uuid] ? itemLootFlags[uuid] != claimType : true)
+        ;
+        // Fallback to user's assigned character, if they have one.
+        if (claimantUuids.length <= 0)
+            claimantUuids = game.user.character ? [`Actor.${game.user.character.id}`] : []; // janky way to make it a uuid
+        console.log('new choice', claimantUuids);
+        if (claimantUuids.length <= 0) {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noClaimantAvailable`));
             return;
         }
 
-        // check if this is a no-op
-        // claimants will be a map of claimant actor ID -> claim type
-        const hasExistingClaim = flags[claimantUuid] == claimType;
-        if (hasExistingClaim) {
-            //console.log('Skipping redundant claim.');
-            return;
-        }
+        for (let claimantUuid of claimantUuids) {
+            if (!claimantUuid) continue; // Unexpected, but just in case.
+            //ui.notifications.error(game.i18n.format(`${MODULE_CONFIG.name}.badClaimantUuid`, claimantUuids));
 
-        makeClaim(claimantUuid, claimType, item.uuid);
+            // TODO: Make this function and its message accept an array of claimants.
+            //       Instead of sending one message for each.
+            await makeClaim(claimantUuid, claimType, item.uuid);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
     }
 
     async _onGivePermissionsClick(event) {
@@ -328,6 +366,7 @@ export class SimpleLootSheet extends ActorSheet {
             // Skip items that've already been looted.
             if (lootedItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
 
+            // Find and collect the set of needs and greeds claims.
             const needs = Object.entries(
                 lootedItem.data.flags[MODULE_CONFIG.name] || {}
                 )
@@ -344,27 +383,7 @@ export class SimpleLootSheet extends ActorSheet {
             // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
 
-            // Pick a winner.
-            // TODO: Chat card, Dice So Nice, something else?
-            const winnerUuid = uuidFromClaimFlag(claimantIds[Math.floor(Math.random() * claimantIds.length)]);
-
-            let recipientItemData = duplicate(lootedItem);
-            // Clear claim keys, and set where it came from.
-            recipientItemData.flags[MODULE_CONFIG.name] = {
-                'looted-from-uuid': this.actor.uuid,
-                'looted-from-name': this.actor.name,
-            };
-            // The recipient's new item shouldn't be equipped, since it's just been looted.
-            if (recipientItemData.data.equipped === true) { // dnd5e, possibly other systems
-                recipientItemData.data.equipped = false;
-            }
-
-            giveLootTo(recipientItemData, claimantIds, winnerUuid);
-
-            // Mark the lootee's item as having been looted.
-            // TODO: Mark array of winners, not just single, due to stack-split wins?
-            // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
-            await lootedItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
+            giveLootTo(this.actor, lootedItem, claimantIds);
         }
     }
 
