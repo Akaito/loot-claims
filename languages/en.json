@@ -12,7 +12,7 @@
     "simple-loot-sheet-fvtt.givePermissions": "Give Permissions",
     "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
 
-    "simple-loot-sheet-fvtt.badClaimantUuid": "Claimant declared with UUID [{}].  No such token/actor.",
+    "simple-loot-sheet-fvtt.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
     "simple-loot-sheet-fvtt.confirmResetMessage": "Reset all claimed loot?",
     "simple-loot-sheet-fvtt.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character.",
     "simple-loot-sheet-fvtt.noSuchTable": "No such table was found.  See the console for details.",

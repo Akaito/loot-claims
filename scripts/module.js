@@ -6,6 +6,28 @@ game.socket.emit('module.<module-name>', <object>);
 game.socket.on('module.<module-name>', async (data) => { ...stuff... });
 */
 
+export class ClaimantClaim {
+    // Future: allow claiming only some quantity.
+    constructor(uuid, name, img) {
+        this.uuid = uuid;
+        this.name = name;
+        this.img = img;
+    }
+}
+
+/// Pass to an array's `.filter()` to unique-ify it.
+///
+/// From https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates#14438954
+export function unique(value, index, array) {
+    /*
+    if (typeof(value) === ClaimantClaim) {
+        //return array.indexOf(array.find(c => c.uuid == value.uuid)) == index;
+        value = array.find(c => c.uuid == value.uuid);
+    }
+    */
+    return array.indexOf(value) == index;
+}
+
 /// Try using this like `SimpleLootSheet.reset(canvas.scene.tokens)` to reset everything in a scene.
 ///
 /// target: Actor, Token, or Item.
@@ -95,17 +117,31 @@ export function decodeUuidFromFlag(flag) {
     return flag?.replace('claim~','')?.replaceAll('~','.');
 }
 export function uuidFromClaimFlag(flag) {
+    console.log('uuidFromClaimFlag', flag);
     return decodeUuidFromFlag(flag?.replace('claim~', ''));
 }
 export function claimFlagFromUuid(uuid) {
     return `claim~${encodeUuidForFlag(uuid)}`;
 }
 
-/// Pass to an array's `.filter()` to unique-ify it.
-///
-/// From https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates#14438954
-export function unique(value, index, self) {
-    return self.indexOf(value) === index;
+/// "Format / LOCalize"
+/// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
+export function floc(message, ...args) {
+    if (args?.length)
+        return game.i18n.format(message, ...args);
+    return game.i18n.localize(message);
+}
+
+/// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.
+export function error(message, ...args) {
+    conError(message, ...args);
+    uiError(message, ...args);
+}
+export function conError(message, ...args) {
+    console.error(`${MODULE_CONFIG.name}: ${floc(message, ...args)}`);
+}
+export function uiError(message, ...args) {
+    ui.notifications.error(`${MODULE_CONFIG.nameHuman}: ${floc(message, ...args)}`);
 }
 
 export async function handleSocketGm(message, userSenderId) {
@@ -119,18 +155,46 @@ export async function handleSocketGm(message, userSenderId) {
         // Set claim to the specified value, or clear it if they're the same.
         case MODULE_CONFIG.messageTypes.CLAIM_REQUEST: {
             const {claimType, claimantUuids, itemUuid} = message;
+            if (!Array.isArray(claimantUuids)) return;
             if (!MODULE_CONFIG.claimTypes.includes(claimType)) {
                 console.error(MODULE_CONFIG.name, `Invalid claim type [${claimType}].  Not one of [${MODULE_CONFIG.claimTypes}].`);
                 return;
             }
+
             let item = await fromUuid(itemUuid);
             console.log('item being claimed', item);
             // Don't allow changing claims after item has already been looted.
             if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
 
             let claims = item.getFlag(MODULE_CONFIG.name, claimType) || [];
-            claims.push(...claimantUuids);
-            claims = claims.filter(unique);
+            let claimsChanged = false;
+            for (let claimantUuid of claimantUuids) {
+                const claimant = await fromUuid(claimantUuid);
+                if (!claimant) {
+                    conError(`Invalid claimant UUID skipped.  Nothing returned from fromUuid('${claimantUuid}')`);
+                    continue;
+                }
+                if (claims.find(c => c.uuid == claimantUuid)) continue; // skip already-present claims
+                claims.push(new ClaimantClaim(
+                    claimantUuid,
+                    claimant.name,
+                    claimant.data?.img || claimant.actor?.img
+                ));
+                claimsChanged = true;
+            }
+            //console.log('new claimant objects', claims);
+            if (!claimsChanged) return;
+
+            // Unique-ify the list of claims.  No-one gets to claim twice.
+            claims = claims.reduce((ongoing, curr) => {
+                if (!ongoing.find(claim => claim.uuid == curr.uuid))
+                    ongoing.push(curr);
+                return ongoing;
+            }, []);
+
+            // Find other claim types this token may be trying for.
+
+            // Update the item with the new claims.
             await item.setFlag(MODULE_CONFIG.name, claimType, claims);
             console.log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
 

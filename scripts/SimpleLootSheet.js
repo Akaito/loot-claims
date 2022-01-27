@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config.js';
-import { claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
+import { ClaimantClaim, claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module.js';
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
@@ -221,20 +221,40 @@ export class SimpleLootSheet extends ActorSheet {
             if (MODULE_CONFIG.excludedItemTypes.includes(item.type)) continue;
             if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
 
+            // Get our module's flags for this item, and translate them into a form that's easier
+            // for Handlebars templates to digest.
             const ourFlags = item.data.flags[MODULE_CONFIG.name];
-            console.log('           QUANTITY', item);
             data.claims[item.uuid] = {
                 uuid: item.uuid,
                 name: item.name,
                 img: item.img,
                 quantity: item.data.data.quantity,
-                lootedBy: ourFlags ? ourFlags[MODULE_CONFIG.lootedByKey] : undefined,
-                needs: [],
-                greeds: [],
+                [MODULE_CONFIG.lootedByKey]: ourFlags ? ourFlags[MODULE_CONFIG.lootedByKey] : undefined,
+                [MODULE_CONFIG.needKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.needKey) || [],
+                [MODULE_CONFIG.greedKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.greedKey) || [],
+                [MODULE_CONFIG.passKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.passKey) || [],
             };
             if (!ourFlags) continue;
 
+            for (let claimType of MODULE_CONFIG.claimTypes) {
+                for (let claimantUuid of item.getFlag(MODULE_CONFIG.name, claimType) || []) {
+                    console.log(claimType, claimantUuid, typeof(claimantUuid));
+                    console.log((await canvas.tokens.getDocuments()).find(t=>t.uuid == claimantUuid));
+                    let actor = null;//await fromUuid(claimantUuid.uuid);
+                    if (!actor) {
+                        //console.error('blah'); // TODO: Proper error message.
+                        continue;
+                    }
+                    data.claims[item.uuid][claimType].push({
+                        uuid: claimantUuid.uuid,
+                        name: actor.token?.name || actor.name,
+                        img: actor.token?.data?.img || actor.img,
+                    });
+                }
+            }
+
             for (const key of Object.keys(ourFlags)) {
+                break;
                 if (!key.startsWith('claim~')) continue;
 
                 const value = ourFlags[key];
@@ -247,7 +267,7 @@ export class SimpleLootSheet extends ActorSheet {
                 actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
 
                 let lootedByUuid = uuidFromClaimFlag(ourFlags[MODULE_CONFIG.lootedByKey]);
-                console.log(item.name, 'looted by', lootedByUuid, 'we are', claimantUuid);
+                //console.log(item.name, 'looted by', lootedByUuid, 'we are', claimantUuid);
 
                 let claimant = {
                     uuid: claimantUuid,

@@ -37,7 +37,7 @@ export const MODULE_CONFIG = {
     greedKey: 'greed',
     passKey: 'pass',
 
-    lootedByKey: 'looted-by',
+    lootedByKey: 'lootedBy',
     lootedFromKey: 'looted-from-uuid',
     lootedFromNameKey: 'looted-from-name',
 
