@@ -72,11 +72,15 @@ This still lets the table contents slide up above the table, visible above the h
     justify-content: center;
     align-items: center;
     text-align: center;
-    transition: all 0.25s ease-in-out;
+    /* transition: all 0.25s ease-in-out; */
 }
 .simple-loot-sheet-table .player-claims:hover {
-    /* TODO */
-    background-color: turquoise;
+    /* Mimic Foundry's styling for buttons. */
+    outline: none;
+    box-shadow: 0 0 5px var(--color-shadow-primary);
+}
+.simple-loot-sheet-table .item.looted .player-claims:hover {
+    box-shadow: none;
 }
 .simple-loot-sheet-table .player-claims * {
     margin: 0 auto;
