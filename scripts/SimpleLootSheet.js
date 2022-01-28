@@ -1,7 +1,7 @@
-import { MODULE_CONFIG } from './lootClaims-config.js';
-import { ClaimantClaim, claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './lootClaims-module.js';
+import { MODULE_CONFIG } from './config-lootClaims.js';
+import { ClaimantClaim, claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module-lootClaims.js';
 
-import * as util from './lootClaims-util.js';
+import * as util from './util-lootClaims.js';
 const log = util.log;
 
 /// For the client to express interest in claiming an item (or passing on one).

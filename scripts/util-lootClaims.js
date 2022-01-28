@@ -1,4 +1,4 @@
-import { MODULE_CONFIG } from './lootClaims-config.js';
+import { MODULE_CONFIG } from './config-lootClaims.js';
 
 /// "Format / LOCalize"
 /// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.

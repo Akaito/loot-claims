@@ -1,7 +1,7 @@
-import { MODULE_CONFIG } from './lootClaims-config.js';
+import { MODULE_CONFIG } from './config-lootClaims.js';
 import { SimpleLootSheet } from './SimpleLootSheet.js';
 
-import * as util from './lootClaims-util.js';
+import * as util from './util-lootClaims.js';
 const log = util.log; // still want this short, convenient name
 
 export class ClaimantClaim {

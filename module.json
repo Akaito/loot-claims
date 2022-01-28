@@ -23,11 +23,11 @@
   "conflicts": [
   ],
   "esmodules": [
-    "/scripts/lootClaims-config.js",
-    "/scripts/lootClaims-util.js",
-    "/scripts/lootClaims-module.js",
-    "/scripts/lootClaims-socket.js",
-    "/scripts/SimpleLootSheet.js"
+    "/scripts/config-lootClaims.js",
+    "/scripts/util-lootClaims.js",
+    "/scripts/module-lootClaims.js",
+    "/scripts/socket-lootClaims.js",
+    "/scripts/SimpleLootSheet-lootClaims.js"
   ],
   "scripts": [
     "/scripts/lib/lib.js"
