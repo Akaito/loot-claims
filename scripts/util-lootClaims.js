@@ -58,13 +58,12 @@ export function error(message, ...args) {
     uiError(message, ...args);
 }
 export function conError(message, ...args) {
-    _consolePrint(console.log, message, ...args);
+    _consolePrint(console.error, message, ...args);
 }
 export function uiError(message, ...args) {
     ui.notifications.error(`${MODULE_CONFIG.title} | ${floc(message, ...args)}`);
 }
 
 export function log(message, ...args) {
-    console.log('log()', message, args);
     _consolePrint(console.log, message, ...args);
 }
