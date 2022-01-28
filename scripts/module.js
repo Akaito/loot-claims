@@ -1,15 +1,73 @@
 import { MODULE_CONFIG } from './config.js';
 import { SimpleLootSheet } from './SimpleLootSheet.js';
 
-/* Notes for later:
-game.socket.emit('module.<module-name>', <object>);
-game.socket.on('module.<module-name>', async (data) => { ...stuff... });
-*/
+/// "Format / LOCalize"
+/// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
+/// Returns the formatted and/or localized message, and whether or not the args were spent.
+export function floc(message, ...args) {
+    let result = {
+        locMessage: message,
+        argsSpent: false,
+    };
+
+    if (!(typeof message == 'string' || message instanceof String)) return result;
+    //if (!game.i18n.translations[MODULE_CONFIG.name].includes(message)) return result;
+
+    try {
+        if (args?.length) {
+            result.locMessage = game.i18n.format(message, ...args);
+            result.argsSpent = true;
+        }
+        else {
+            result.locMessage = game.i18n.localize(message);
+        }
+    }
+    catch(_) {}
+    return result;
+}
+
+function _consolePrint(printFunc, message, ...args) {
+    let {locMessage, argsSpent} = floc(message, ...args);
+    if (argsSpent)
+        printFunc(MODULE_CONFIG.name, '|', locMessage);
+    else
+        printFunc(MODULE_CONFIG.name, '|', locMessage, ...args);
+}
+
+/// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.
+export function error(message, ...args) {
+    conError(message, ...args);
+    uiError(message, ...args);
+}
+export function conError(message, ...args) {
+    _consolePrint(console.log, message, ...args);
+}
+export function uiError(message, ...args) {
+    ui.notifications.error(`${MODULE_CONFIG.nameHuman} | ${floc(message, ...args)}`);
+}
+
+export function log(message, ...args) {
+    _consolePrint(console.log, message, ...args);
+    /*
+    if (game.i18n.translations[MODULE_CONFIG.name].includes(message)) {
+        try {
+            message = floc(message, ...args);
+            console.log(`${MODULE_CONFIG.name} |`, message);
+        } catch(_) {
+            message = game.i18n.localize(message);
+            console.log(`${MODULE_CONFIG.name} |`, message;
+        }
+    }
+    */
+}
 
 export class ClaimantClaim {
     // Future: allow claiming only some quantity.
-    constructor(uuid, name, img) {
+    constructor(uuid, claimType, name, img) {
+        // Required.
         this.uuid = uuid;
+        this.claimType = claimType;
+        // Extra for ease of use (mostly in Handlebars).
         this.name = name;
         this.img = img;
     }
@@ -71,17 +129,17 @@ export async function reset(actor, {prompt=true} = {}) {
     let items = actor?.items;
     if (!items) {
         ui.notifications.error(`((${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.))`);
-        console.log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand (has no .items):", actor);
+        log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand (has no .items):", actor);
         return;
     }
 
     let toBeDeleted = [];
     let updates = [];
     for (let item of items) {
-        //console.log('should attempt reset on', item, item.name, item.data?.flags);
+        //log('should attempt reset on', item, item.name, item.data?.flags);
         const ourFlags = item.data?.flags[MODULE_CONFIG.name];
         if (ourFlags) {
-            console.log('generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
+            log('generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
             if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
                 toBeDeleted.push(item.id);
                 // TODO: Don't just reset loot like this, but remove it.  Keeping this here for now for quicker testing.
@@ -92,7 +150,7 @@ export async function reset(actor, {prompt=true} = {}) {
             }
         }
     }
-    //console.log('pushing updates', updates);
+    //log('pushing updates', updates);
     await actor.updateEmbeddedDocuments('Item', updates);
     await actor.deleteEmbeddedDocuments('Item', toBeDeleted);
 }
@@ -117,39 +175,19 @@ export function decodeUuidFromFlag(flag) {
     return flag?.replace('claim~','')?.replaceAll('~','.');
 }
 export function uuidFromClaimFlag(flag) {
-    console.log('uuidFromClaimFlag', flag);
+    log('uuidFromClaimFlag', flag);
     return decodeUuidFromFlag(flag?.replace('claim~', ''));
 }
 export function claimFlagFromUuid(uuid) {
     return `claim~${encodeUuidForFlag(uuid)}`;
 }
 
-/// "Format / LOCalize"
-/// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
-export function floc(message, ...args) {
-    if (args?.length)
-        return game.i18n.format(message, ...args);
-    return game.i18n.localize(message);
-}
-
-/// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.
-export function error(message, ...args) {
-    conError(message, ...args);
-    uiError(message, ...args);
-}
-export function conError(message, ...args) {
-    console.error(`${MODULE_CONFIG.name}: ${floc(message, ...args)}`);
-}
-export function uiError(message, ...args) {
-    ui.notifications.error(`${MODULE_CONFIG.nameHuman}: ${floc(message, ...args)}`);
-}
-
 export async function handleSocketGm(message, userSenderId) {
-    //console.log('handleSocketGm()');
-    console.log('Got a socket event from', userSenderId, message);
-    //console.log('responsible GM is', whoisResponsibleGM());
+    //log('handleSocketGm()');
+    log('Got a socket event from', userSenderId, message);
+    //log('responsible GM is', whoisResponsibleGM());
     if (!iamResponsibleGM()) return;
-    //console.log("  I'm the responsible GM");
+    //log("  I'm the responsible GM");
 
     switch (message.type) {
         // Set claim to the specified value, or clear it if they're the same.
@@ -162,27 +200,36 @@ export async function handleSocketGm(message, userSenderId) {
             }
 
             let item = await fromUuid(itemUuid);
-            console.log('item being claimed', item);
+            log('item being claimed', item);
             // Don't allow changing claims after item has already been looted.
+            log('already looted?', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey));
             if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
 
-            let claims = item.getFlag(MODULE_CONFIG.name, claimType) || [];
+            let claims = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || [];
             let claimsChanged = false;
-            for (let claimantUuid of claimantUuids) {
+            for (let [claimantIndex, claimantUuid] of claimantUuids.entries()) {
                 const claimant = await fromUuid(claimantUuid);
                 if (!claimant) {
                     conError(`Invalid claimant UUID skipped.  Nothing returned from fromUuid('${claimantUuid}')`);
                     continue;
                 }
-                if (claims.find(c => c.uuid == claimantUuid)) continue; // skip already-present claims
-                claims.push(new ClaimantClaim(
-                    claimantUuid,
-                    claimant.name,
-                    claimant.data?.img || claimant.actor?.img
-                ));
-                claimsChanged = true;
+                let existingClaim = claims.find(c => c.uuid == claimantUuid);
+                if (existingClaim) {
+                    if (existingClaim.claimType == claimType) continue; // already as requested
+                    claims[claimantIndex].claimType = claimType;
+                    claimsChanged = true;
+                }
+                else {
+                    claims.push(new ClaimantClaim(
+                        claimantUuid,
+                        claimType,
+                        claimant.name,
+                        claimant.data?.img || claimant.actor?.img
+                    ));
+                    claimsChanged = true;
+                }
             }
-            //console.log('new claimant objects', claims);
+            //log('new claimant objects', claims);
             if (!claimsChanged) return;
 
             // Unique-ify the list of claims.  No-one gets to claim twice.
@@ -196,7 +243,7 @@ export async function handleSocketGm(message, userSenderId) {
 
             // Update the item with the new claims.
             await item.setFlag(MODULE_CONFIG.name, claimType, claims);
-            console.log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
+            log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
 
             for (let claimantUuid of claimantUuids) {
                 const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
@@ -209,13 +256,13 @@ export async function handleSocketGm(message, userSenderId) {
                 // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
                 // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
                 if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
-                    //console.log('UNSET claim');
+                    //log('UNSET claim');
                     //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
                     item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
-                    //console.log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
+                    //log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
                 }
                 else {
-                    //console.log('SET claim');
+                    //log('SET claim');
                     item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
                 }
                 */
@@ -226,10 +273,10 @@ export async function handleSocketGm(message, userSenderId) {
 }
 
 function handleSocket(message, senderUserId) {
-    console.log('handleSocket() (non-GM)');
-    console.log("IT'S WORKING!");
-    console.log('message', message);
-    console.log('sender user ID', senderUserId);
+    log('handleSocket() (non-GM)');
+    log("IT'S WORKING!");
+    log('message', message);
+    log('sender user ID', senderUserId);
     const response = "h'lo";
     //socket.ack(response);
     //socket.broadcast.emit(MODULE_CONFIG.socket, response);
@@ -237,14 +284,14 @@ function handleSocket(message, senderUserId) {
 }
 
 Hooks.once('init', async function() {
-    console.log(`${MODULE_CONFIG.name} | init`);
+    log(`${MODULE_CONFIG.name} | init`);
     //libWrapper.register('simple-loot-sheet-fvtt');
 
     // for the server-side
     // TODO: should this second param be async?
     /*
     game.socket.on(MODULE_CONFIG.socket, (request, ack) => {
-        console.log('SOCKET server got the message');
+        log('SOCKET server got the message');
         const response = Object.merge(request, {
             type: 'claimResponse',
         });
@@ -258,7 +305,7 @@ Hooks.once('init', async function() {
     game.socket.on(MODULE_CONFIG.socket, response => {
         // call the same response handler as the requesting client.
         // doSomethingWithResponse(response);
-        console.log('SOCKET uninvolved client got the response');
+        log('SOCKET uninvolved client got the response');
     });
     */
 
@@ -276,11 +323,11 @@ Hooks.once('init', async function() {
     }
 
     preloadHandlebarsTemplates();
-    console.log(`${MODULE_CONFIG.name} | init done`);
+    log('init done');
 });
 
 Hooks.once('ready', () => {
-    console.log(`${MODULE_CONFIG.name} | ready`);
+    log('ready');
 
     if (game.user.isGM)
         socket.on(MODULE_CONFIG.socket, handleSocketGm);
@@ -289,7 +336,7 @@ Hooks.once('ready', () => {
 
     window.SimpleLootSheet = MODULE_CONFIG.functions;
 
-    console.log(`${MODULE_CONFIG.name} | ready done`);
+    log('ready done');
 });
 
 
@@ -299,19 +346,9 @@ function _onResetSceneLootClick(html) {
 }
 
 Hooks.on('getSceneNavigationContext', async (app, html, options) => {
-    console.log('                   RENDER SCENE NAVIGATION');
     if (!game.user.isGM) return;
 
-    //console.log('html', html.find('.context-items'));
-    console.log('html', html);
-
-    /*
-    html.find('.context-items')
-        .append($(getSceneContextEntryHtml)
-            .click(_onResetSceneLootClick)
-        );
-    */
-
+    // Add scene context menu item to reset loot (on tokens/actors within it).
     html.push({
         name: `${MODULE_CONFIG.name}.resetLoot`,
         icon: '<i class="fas fa-coins"></i>',

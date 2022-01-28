@@ -14,6 +14,7 @@ TODO/NEXT:
 - [ ] If multiple owned tokens are controlled, all mark claims (GM convenience thing).
 - [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Currency.  :(
+- [ ] Change module name to 'lootClaims'.
 - [ ] Test distributing loot from a linked actor.
 - [ ] Use libwrapper.
 - [ ] Have some settings.
