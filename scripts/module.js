@@ -3,35 +3,58 @@ import { SimpleLootSheet } from './SimpleLootSheet.js';
 
 /// "Format / LOCalize"
 /// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
-/// Returns the formatted and/or localized message, and whether or not the args were spent.
+/// Returns the formatted and/or localized message, and the unspent args.
 export function floc(message, ...args) {
+    if (!(typeof message == 'string' || message instanceof String)) return result;
+
     let result = {
         locMessage: message,
-        argsSpent: false,
+        data,
+        args,
     };
+
+    console.log('floc()');
+    console.log(Array.isArray(args));
+    console.log(args);
 
     if (!(typeof message == 'string' || message instanceof String)) return result;
     //if (!game.i18n.translations[MODULE_CONFIG.name].includes(message)) return result;
 
-    try {
-        if (args?.length) {
-            result.locMessage = game.i18n.format(message, ...args);
-            result.argsSpent = true;
+    result.locMessage = game.i18n.localize(message);
+    if (result.unspentArgs?.length <= 0) return result;
+    //if (!game.i18n.has(message)) return result;
+
+    // This bit is from inside Foundry's game.i18n.format().
+    // Just needed to get more information out of the process.
+    const fmt = /\{[^\}]+\}/g;
+    result.locMessage = result.locMessage.replace(fmt, captured => {
+        try {
+            const argName = captured.slice(1, -1);
+            // Have to significantly change up how this works since we're not using the `data={}` arg style.
+            for ([index, value] of result.unspentArgs.entries()) {
+                if (!Object.keys(value).includes(argName)) continue;
+
+                const replacement = value[argName];
+                delete result.unspentArgs[argName];
+                console.log('spent', argName, 'while floc()ing');
+                return replacement;
+            }
+            return captured;
         }
-        else {
-            result.locMessage = game.i18n.localize(message);
+        catch (_) {
+            return captured;
         }
-    }
-    catch(_) {}
+    });
+    console.log('floc() result', result, 'vs incoming args', args);
     return result;
 }
 
 function _consolePrint(printFunc, message, ...args) {
-    let {locMessage, argsSpent} = floc(message, ...args);
-    if (argsSpent)
-        printFunc(MODULE_CONFIG.name, '|', locMessage);
+    let {locMessage, unspentArgs} = floc(message, ...args);
+    if (unspentArgs?.length <= 0)
+        printFunc(MODULE_CONFIG.name, '|', locMessage, ...unspentArgs);
     else
-        printFunc(MODULE_CONFIG.name, '|', locMessage, ...args);
+        printFunc(MODULE_CONFIG.name, '|', locMessage);
 }
 
 /// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.
@@ -47,6 +70,7 @@ export function uiError(message, ...args) {
 }
 
 export function log(message, ...args) {
+    console.log('log()', message, args);
     _consolePrint(console.log, message, ...args);
     /*
     if (game.i18n.translations[MODULE_CONFIG.name].includes(message)) {
@@ -182,6 +206,86 @@ export function claimFlagFromUuid(uuid) {
     return `claim~${encodeUuidForFlag(uuid)}`;
 }
 
+async function _handleClaimRequest(message, userSenderId) {
+    log('_handleClaimRequest()');
+    const {claimType, claimantUuids, itemUuid} = message;
+    if (!Array.isArray(claimantUuids)) return;
+    if (!MODULE_CONFIG.claimTypes.includes(claimType)) {
+        console.error(MODULE_CONFIG.name, `Invalid claim type [${claimType}].  Not one of [${MODULE_CONFIG.claimTypes}].`);
+        return;
+    }
+
+    let item = await fromUuid(itemUuid);
+    log('item being claimed', item);
+    // Don't allow changing claims after item has already been looted.
+    log('already looted?', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey));
+    if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
+
+    let claims = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || [];
+    let claimsChanged = false;
+    for (let [claimantIndex, claimantUuid] of claimantUuids.entries()) {
+        const claimant = await fromUuid(claimantUuid);
+        if (!claimant) {
+            conError(`Invalid claimant UUID skipped.  Nothing returned from fromUuid('${claimantUuid}')`);
+            continue;
+        }
+        let existingClaim = claims.find(c => c.uuid == claimantUuid);
+        if (existingClaim) {
+            if (existingClaim.claimType == claimType) continue; // already as requested
+            claims[claimantIndex].claimType = claimType;
+            claimsChanged = true;
+        }
+        else {
+            claims.push(new ClaimantClaim(
+                claimantUuid,
+                claimType,
+                claimant.name,
+                claimant.data?.img || claimant.actor?.img
+            ));
+            claimsChanged = true;
+        }
+    }
+    //log('new claimant objects', claims);
+    if (!claimsChanged) return;
+
+    // Unique-ify the list of claims.  No-one gets to claim twice.
+    claims = claims.reduce((ongoing, curr) => {
+        if (!ongoing.find(claim => claim.uuid == curr.uuid))
+            ongoing.push(curr);
+        return ongoing;
+    }, []);
+
+    // Find other claim types this token may be trying for.
+
+    // Update the item with the new claims.
+    await item.setFlag(MODULE_CONFIG.name, claimType, claims);
+    log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
+
+    for (let claimantUuid of claimantUuids) {
+        const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
+
+        //flagUpdates
+
+        /*
+        // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
+        // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
+        // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
+        // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
+        if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
+            //log('UNSET claim');
+            //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
+            item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
+            //log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
+        }
+        else {
+            //log('SET claim');
+            item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
+        }
+        */
+    }
+    return;
+}
+
 export async function handleSocketGm(message, userSenderId) {
     //log('handleSocketGm()');
     log('Got a socket event from', userSenderId, message);
@@ -191,84 +295,7 @@ export async function handleSocketGm(message, userSenderId) {
 
     switch (message.type) {
         // Set claim to the specified value, or clear it if they're the same.
-        case MODULE_CONFIG.messageTypes.CLAIM_REQUEST: {
-            const {claimType, claimantUuids, itemUuid} = message;
-            if (!Array.isArray(claimantUuids)) return;
-            if (!MODULE_CONFIG.claimTypes.includes(claimType)) {
-                console.error(MODULE_CONFIG.name, `Invalid claim type [${claimType}].  Not one of [${MODULE_CONFIG.claimTypes}].`);
-                return;
-            }
-
-            let item = await fromUuid(itemUuid);
-            log('item being claimed', item);
-            // Don't allow changing claims after item has already been looted.
-            log('already looted?', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey));
-            if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
-
-            let claims = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || [];
-            let claimsChanged = false;
-            for (let [claimantIndex, claimantUuid] of claimantUuids.entries()) {
-                const claimant = await fromUuid(claimantUuid);
-                if (!claimant) {
-                    conError(`Invalid claimant UUID skipped.  Nothing returned from fromUuid('${claimantUuid}')`);
-                    continue;
-                }
-                let existingClaim = claims.find(c => c.uuid == claimantUuid);
-                if (existingClaim) {
-                    if (existingClaim.claimType == claimType) continue; // already as requested
-                    claims[claimantIndex].claimType = claimType;
-                    claimsChanged = true;
-                }
-                else {
-                    claims.push(new ClaimantClaim(
-                        claimantUuid,
-                        claimType,
-                        claimant.name,
-                        claimant.data?.img || claimant.actor?.img
-                    ));
-                    claimsChanged = true;
-                }
-            }
-            //log('new claimant objects', claims);
-            if (!claimsChanged) return;
-
-            // Unique-ify the list of claims.  No-one gets to claim twice.
-            claims = claims.reduce((ongoing, curr) => {
-                if (!ongoing.find(claim => claim.uuid == curr.uuid))
-                    ongoing.push(curr);
-                return ongoing;
-            }, []);
-
-            // Find other claim types this token may be trying for.
-
-            // Update the item with the new claims.
-            await item.setFlag(MODULE_CONFIG.name, claimType, claims);
-            log(`item ${claimType} claimants set to`, item.getFlag(MODULE_CONFIG.name, claimType));
-
-            for (let claimantUuid of claimantUuids) {
-                const claimantFlagsKey = claimFlagFromUuid(claimantUuid);
-
-                //flagUpdates
-
-                /*
-                // Maybe we just use flags instead.  Since the stand-alone FVTT refreshing would restart the server and dump transient claims data.
-                // A UUID like Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS can be used in two ways:
-                // - await fromUuid('Scene.oGdObQ2fIetG64CD.Token.vzN7WxMXw6NlhpoA.Item.iBhjlawEB5iwUmoS')
-                // - game.scenes.get('oGdObQ2fIetG64CD').tokens.get('vzN7WxMXw6NlhpoA').actor.items.get('iBhjlawEB5iwUmoS')
-                if (item.getFlag(MODULE_CONFIG.name, claimantFlagsKey) == claimType) {
-                    //log('UNSET claim');
-                    //await item.unsetFlag(MODULE_CONFIG.name, claimantActorUuid);  // Exists.  Does nothing.
-                    item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, MODULE_CONFIG.passKey);
-                    //log('flag after unsetting claim', item.getFlag(MODULE_CONFIG.name, claimantActorUuid));
-                }
-                else {
-                    //log('SET claim');
-                    item.setFlag(MODULE_CONFIG.name, claimantFlagsKey, claimType);
-                }
-                */
-            }
-            return;
-        }
+        case MODULE_CONFIG.messageTypes.CLAIM_REQUEST: _handleClaimRequest(message, userSenderId); break;
     }
 }
 
@@ -335,6 +362,8 @@ Hooks.once('ready', () => {
         socket.on(MODULE_CONFIG.socket, handleSocket);
 
     window.SimpleLootSheet = MODULE_CONFIG.functions;
+
+    floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]);
 
     log('ready done');
 });

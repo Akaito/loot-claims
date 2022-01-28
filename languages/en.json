@@ -9,8 +9,10 @@
 
     "simple-loot-sheet-fvtt.addLootTable": "Add Loot",
     "simple-loot-sheet-fvtt.distributeLoot": "Distribute Loot",
-    "simple-loot-sheet-fvtt.givePermissions": "Give Permissions",
+    "simple-loot-sheet-fvtt.givePermissions": "Permit Looting",
     "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
+
+    "myfootest": "hi {arg} - {blarg} bye",
 
     "simple-loot-sheet-fvtt.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
     "simple-loot-sheet-fvtt.confirmResetMessage": "Reset all claimed loot?",
