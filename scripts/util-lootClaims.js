@@ -1,5 +1,12 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
 
+/// Pass to an array's `.filter()` to unique-ify it.
+///
+/// From https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates#14438954
+export function unique(value, index, array) {
+    return array.indexOf(value) == index;
+}
+
 /// "Format / LOCalize"
 /// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
 /// Returns the formatted and/or localized message, and the unspent args.

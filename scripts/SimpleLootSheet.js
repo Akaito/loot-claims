@@ -1,8 +1,21 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
-import { ClaimantClaim, claimFlagFromUuid, decodeUuidFromFlag, encodeUuidForFlag, handleSocketGm, iamResponsibleGM, uuidFromClaimFlag } from './module-lootClaims.js';
-
+import { decodeUuidFromFlag, encodeUuidForFlag, uuidFromClaimFlag } from './module-lootClaims.js';
+import { iamResponsibleGM } from './socket-lootClaims.js';
+import { handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
 const log = util.log;
+
+export class ClaimantClaim {
+    // Future: allow claiming only some quantity.
+    constructor(uuid, claimType, name, img) {
+        // Required.
+        this.uuid = uuid;
+        this.claimType = claimType;
+        // Extra for ease of use (mostly in Handlebars).
+        this.name = name;
+        this.img = img;
+    }
+}
 
 /// For the client to express interest in claiming an item (or passing on one).
 ///
