@@ -1,9 +1,9 @@
 :root {
-    --simple-loot-sheet-img-size: 36px;
-    --simple-loot-sheet-looted-quantity-size: 12px;
+    --loot-claims-img-size: 36px;
+    --loot-claims-looted-quantity-size: 12px;
 }
 
-.simple-loot-sheet-app .gm-header {
+.loot-claims-app .gm-header {
     display: flex;
     flex-direction: row;
     /*
@@ -12,41 +12,41 @@
     */
 }
 
-.simple-loot-sheet-app .gm-header button {
+.loot-claims-app .gm-header button {
     /* width: 25%; */
 }
 
-.simple-loot-sheet-app .claimant-image-container {
+.loot-claims-app .claimant-image-container {
     position: relative;
     display: inline-block;
 }
-.simple-loot-sheet-app .claimant-image-container .looted-quantity {
+.loot-claims-app .claimant-image-container .looted-quantity {
     position: absolute;
     top: 0;
     right: 0;
     font-size: 0.8em;
 
-    width: var(--simple-loot-sheet-looted-quantity-size);
-    height: var(--simple-loot-sheet-looted-quantity-size);
+    width: var(--loot-claims-looted-quantity-size);
+    height: var(--loot-claims-looted-quantity-size);
     background-color: yellow;
     /* aspect-ratio: 1 / 1; not supported yet */
     border-radius: 50%;
 }
 
-.simple-loot-sheet-table tr {
-    height: var(--simple-loot-sheet-img-size);
-    min-height: var(--simple-loot-sheet-img-size);
-    max-height: var(--simple-loot-sheet-img-size);
+.loot-claims-table tr {
+    height: var(--loot-claims-img-size);
+    min-height: var(--loot-claims-img-size);
+    max-height: var(--loot-claims-img-size);
 }
 
 /* All non-first columns in the table.  (td that must be following a td, both children of a table.<class>. */
-.simple-loot-sheet-table td + td {
+.loot-claims-table td + td {
     border-left: 1px solid var(--color-border-dark-primary);
 }
 
 /*
 This still lets the table contents slide up above the table, visible above the header.
-.simple-loot-sheet-table tr:first-of-type th {
+.loot-claims-table tr:first-of-type th {
     position: sticky;
     top: 0;
     z-index: 9999;
@@ -54,70 +54,70 @@ This still lets the table contents slide up above the table, visible above the h
 }
 */
 
-.simple-loot-sheet-table td {
+.loot-claims-table td {
     text-align: left;
     vertical-align: middle;
     width: 33%;
 }
-.simple-loot-sheet-table td > * {
-    min-height: var(--simple-loot-sheet-img-size);
+.loot-claims-table td > * {
+    min-height: var(--loot-claims-img-size);
     vertical-align: middle;
 }
 
-.simple-loot-sheet-table img {
+.loot-claims-table img {
     border-style: none;
 }
 
-.simple-loot-sheet-table .player-claims {
+.loot-claims-table .player-claims {
     justify-content: center;
     align-items: center;
     text-align: center;
     /* transition: all 0.25s ease-in-out; */
 }
-.simple-loot-sheet-table .player-claims:hover {
+.loot-claims-table .player-claims:hover {
     /* Mimic Foundry's styling for buttons. */
     outline: none;
     box-shadow: 0 0 5px var(--color-shadow-primary);
 }
-.simple-loot-sheet-table .item.looted .player-claims:hover {
+.loot-claims-table .item.looted .player-claims:hover {
     box-shadow: none;
 }
-.simple-loot-sheet-table .player-claims * {
+.loot-claims-table .player-claims * {
     margin: 0 auto;
 }
 
-.simple-loot-sheet-table .looted {
+.loot-claims-table .looted {
     /* future: don't hide, but show winner of loot instead
     display: none; 
     */
     opacity: 0.35;
 }
-.simple-loot-sheet-table .claimant-image.winner {
+.loot-claims-table .claimant-image.winner {
     background-color:seagreen;
     border-radius: 5px;
 }
 
-.simple-loot-sheet-table .claimant-image,
-.simple-loot-sheet-table .item-image {
-    width: var(--simple-loot-sheet-img-size);
-    height: var(--simple-loot-sheet-img-size);
-    min-width: var(--simple-loot-sheet-img-size);
-    min-height: var(--simple-loot-sheet-img-size);
-    max-width: var(--simple-loot-sheet-img-size);
-    max-height: var(--simple-loot-sheet-img-size);
-    background-size: var(--simple-loot-sheet-img-size);
+.loot-claims-table .claimant-image,
+.loot-claims-table .item-image {
+    width: var(--loot-claims-img-size);
+    height: var(--loot-claims-img-size);
+    min-width: var(--loot-claims-img-size);
+    min-height: var(--loot-claims-img-size);
+    max-width: var(--loot-claims-img-size);
+    max-height: var(--loot-claims-img-size);
+    background-size: var(--loot-claims-img-size);
     vertical-align: middle;
     align-self: center;
 }
 
-.simple-loot-sheet-table .item-brief > element {
+.loot-claims-table .item-brief > element {
     margin-right: 1em;
 }
-.simple-loot-sheet-table .item-brief div {
+.loot-claims-table .item-brief div {
     display: inline;
-    min-height: var(--simple-loot-sheet-img-size);
+    min-height: var(--loot-claims-img-size);
 }
-.simple-loot-sheet-table .item-brief .item-name {
+.loot-claims-table .item-brief .item-name {
     height: 100%;
     vertical-align: middle;
 }

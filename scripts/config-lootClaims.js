@@ -2,8 +2,9 @@ import { reset } from './module-lootClaims.js';
 import { findLootTable } from './SimpleLootSheet.js';
 
 export const MODULE_CONFIG = {
-    name: 'simple-loot-sheet-fvtt',
-    nameHuman: 'Simple Loot Sheet',
+    name: 'loot-claims',
+    title: 'Loot Claims',
+    socket: 'module.loot-claims',
 
     excludedItemTypes: ['class', 'spell', 'feat'],
 
@@ -12,7 +13,6 @@ export const MODULE_CONFIG = {
         reset,
     },
 
-    socket: 'module.simple-loot-sheet-fvtt',
     messageTypes: {
         CLAIM_REQUEST: 'claim-request',
     },

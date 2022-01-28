@@ -1,7 +1,7 @@
 ![](https://img.shields.io/badge/Foundry-v0.8.6-informational)
 <!--- Downloads @ Latest Badge -->
 <!--- replace <user>/<repo> with your username/repository -->
-![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/simple-loot-sheet-fvtt/latest/module.zip)
+![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->

@@ -1,24 +1,24 @@
 {
-    "simple-loot-sheet-fvtt.sheetName": "Simple Loot Sheet",
+    "loot-claims.sheetName": "Simple Loot Sheet",
 
-    "simple-loot-sheet-fvtt.item": "Item",
+    "loot-claims.item": "Item",
 
-    "simple-loot-sheet-fvtt.need": "Will Use",
-    "simple-loot-sheet-fvtt.greed": "Can Carry",
-    "simple-loot-sheet-fvtt.pass": "Meh",
+    "loot-claims.need": "Will Use",
+    "loot-claims.greed": "Can Carry",
+    "loot-claims.pass": "Meh",
 
-    "simple-loot-sheet-fvtt.addLootTable": "Add Loot",
-    "simple-loot-sheet-fvtt.distributeLoot": "Distribute Loot",
-    "simple-loot-sheet-fvtt.givePermissions": "Permit Looting",
-    "simple-loot-sheet-fvtt.resetLoot": "Reset Loot",
+    "loot-claims.addLootTable": "Add Loot",
+    "loot-claims.distributeLoot": "Distribute Loot",
+    "loot-claims.givePermissions": "Permit Looting",
+    "loot-claims.resetLoot": "Reset Loot",
 
     "myfootest": "hi {arg} - {blarg} bye",
 
-    "simple-loot-sheet-fvtt.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
-    "simple-loot-sheet-fvtt.confirmResetMessage": "Reset all claimed loot?",
-    "simple-loot-sheet-fvtt.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character.",
-    "simple-loot-sheet-fvtt.noSuchTable": "No such table was found.  See the console for details.",
-    "simple-loot-sheet-fvtt.noneFound": "None Found",
-    "simple-loot-sheet-fvtt.noTable": "No Table",
-    "simple-loot-sheet-fvtt.responsibleGmOnly": "Only the arbitrarily-chosen responsible GM can distribute loot."
+    "loot-claims.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
+    "loot-claims.confirmResetMessage": "Reset all claimed loot?",
+    "loot-claims.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character.",
+    "loot-claims.noSuchTable": "No such table was found.  See the console for details.",
+    "loot-claims.noneFound": "None Found",
+    "loot-claims.noTable": "No Table",
+    "loot-claims.responsibleGmOnly": "Only the arbitrarily-chosen responsible GM can distribute loot."
 }

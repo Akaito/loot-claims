@@ -10,7 +10,7 @@ const log = util.log; // still want this short, convenient name
 export async function reset(actor, {prompt=true} = {}) {
     if (prompt === true) {
         if (await Dialog.confirm({
-            title: MODULE_CONFIG.nameHuman,
+            title: MODULE_CONFIG.title,
             // TODO: Give more context.  Like one token, scene of tokens, number of tokens, etc.
             content: game.i18n.localize(`${MODULE_CONFIG.name}.confirmResetMessage`),
             defaultYes: false,
@@ -40,7 +40,7 @@ export async function reset(actor, {prompt=true} = {}) {
 
     // Skip players' characters.
     if (actor.hasPlayerOwner) {
-        ui.notifications.info(`((${MODULE_CONFIG.nameHuman}: Loot reset skipped player-owned character ${actor.name}.))`);
+        ui.notifications.info(`((${MODULE_CONFIG.title}: Loot reset skipped player-owned character ${actor.name}.))`);
         return;
     }
 
@@ -89,7 +89,7 @@ export function claimFlagFromUuid(uuid) {
 
 Hooks.once('init', async function() {
     log(`${MODULE_CONFIG.name} | init`);
-    //libWrapper.register('simple-loot-sheet-fvtt');
+    //libWrapper.register('loot-claims');
 
     // for the server-side
     // TODO: should this second param be async?
@@ -119,7 +119,7 @@ Hooks.once('init', async function() {
         // Or add another case-break chunk to use a different sheet.
         case 'dnd5e': {
             Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, {
-                label: 'simple-loot-sheet-fvtt.sheetName',
+                label: 'loot-claims.sheetName',
                 makeDefault: false,
             });
             break;

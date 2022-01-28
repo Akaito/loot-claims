@@ -431,7 +431,7 @@ export class SimpleLootSheet extends ActorSheet {
         event.preventDefault();
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
         if (!iamResponsibleGM()) {
-            ui.notifications.error(game.i18n.localize('simple-loot-sheet-fvtt.responsibleGmOnly'));
+            ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
             return;
         }
 
@@ -443,7 +443,7 @@ export class SimpleLootSheet extends ActorSheet {
     async _onAddLootTableClick(event) {
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
         if (!iamResponsibleGM()) {
-            ui.notifications.error(game.i18n.localize('simple-loot-sheet-fvtt.responsibleGmOnly'));
+            ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
             return;
         }
 
@@ -632,7 +632,7 @@ async function UseBetterTables (token, realTable) {
                     },
                 },
             });
-            //let newItemLootFlags = newItemData.data.flags['simple-loot-sheet-fvtt'] || {};
+            //let newItemLootFlags = newItemData.data.flags['loot-claims'] || {};
             //newItemLootFlags[MODULE_CONFIG.generatedFromKey] = pack.uuid;
             newItems.push(lootItem);
         }

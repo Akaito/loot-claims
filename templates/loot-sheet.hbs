@@ -1,31 +1,31 @@
-<form class="{{cssClass}} simple-loot-sheet-app" autocomplete="off">
+<form class="{{cssClass}} loot-claims-app" autocomplete="off">
     <!-- Notes for later
     https://foundryvtt.com/api/HandlebarsHelpers.html
     -->
 
     {{#if isGM}}
     <div class="gm-header">
-        <button class="reset-loot"><i class="fas fa-trash"></i>{{localize 'simple-loot-sheet-fvtt.resetLoot'}}</button>
+        <button class="reset-loot"><i class="fas fa-trash"></i>{{localize 'loot-claims.resetLoot'}}</button>
         <!--
-        <select name="data.flags.simple-loot-sheet-fvtt" title="((loot table))">
+        <select name="data.flags.loot-claims" title="((loot table))">
         </select>
         -->
         {{#if lootTable}}
-            <button class="add-loot-table" data-roll-table-uuid="{{lootTable.uuid}}"><i class="fas fa-th-list"></i>{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</button>
+            <button class="add-loot-table" data-roll-table-uuid="{{lootTable.uuid}}"><i class="fas fa-th-list"></i>{{localize 'loot-claims.addLootTable'}}</button>
         {{else}}
-            <button disabled><s><i class="fas fa-th-list"></i>{{localize 'simple-loot-sheet-fvtt.addLootTable'}}</s>&nbsp;({{localize 'simple-loot-sheet-fvtt.noTable'}})</button>
+            <button disabled><s><i class="fas fa-th-list"></i>{{localize 'loot-claims.addLootTable'}}</s>&nbsp;({{localize 'loot-claims.noTable'}})</button>
         {{/if}}
-        <button class="give-permissions"><i class="fas fa-share-alt"></i>{{localize 'simple-loot-sheet-fvtt.givePermissions'}}</button>
-        <button class="distribute-loot"><i class="fas fa-coins"></i>{{localize 'simple-loot-sheet-fvtt.distributeLoot'}}</button>
+        <button class="give-permissions"><i class="fas fa-share-alt"></i>{{localize 'loot-claims.givePermissions'}}</button>
+        <button class="distribute-loot"><i class="fas fa-coins"></i>{{localize 'loot-claims.distributeLoot'}}</button>
     </div>
     {{/if}}
 
-    <table class="simple-loot-sheet-table items-list item-list inventory-list {{css}}">
+    <table class="loot-claims-table items-list item-list inventory-list {{css}}">
         <tr>
-            <th>{{localize 'simple-loot-sheet-fvtt.item'}}</th>
-            <th>{{localize 'simple-loot-sheet-fvtt.need'}}</th>
-            <th>{{localize 'simple-loot-sheet-fvtt.greed'}}</th>
-            <!-- <th>{{localize 'simple-loot-sheet-fvtt.pass'}}</th> -->
+            <th>{{localize 'loot-claims.item'}}</th>
+            <th>{{localize 'loot-claims.need'}}</th>
+            <th>{{localize 'loot-claims.greed'}}</th>
+            <!-- <th>{{localize 'loot-claims.pass'}}</th> -->
         </tr>
 
         {{#each claims }}

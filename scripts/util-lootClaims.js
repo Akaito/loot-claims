@@ -62,7 +62,7 @@ export function conError(message, ...args) {
     _consolePrint(console.log, message, ...args);
 }
 export function uiError(message, ...args) {
-    ui.notifications.error(`${MODULE_CONFIG.nameHuman} | ${floc(message, ...args)}`);
+    ui.notifications.error(`${MODULE_CONFIG.title} | ${floc(message, ...args)}`);
 }
 
 export function log(message, ...args) {
