@@ -23,8 +23,10 @@ export function floc(message, ...args) {
     //if (!game.i18n.has(message)) return [result.message, ...result.args];
 
     result.message = game.i18n.localize(message);
-    if (args?.length <= 0) return [result.message, ...result.args];
+    if (args?.length <= 0) return [result.message];
 
+    // TODO: Watch our key usage of args[0], and slice the returned args
+    //       to not include it if we use every part of it while formatting?
     // This bit is mostly from inside Foundry's game.i18n.format().
     // Just needed to get more information out of the process, and change it up to handle more use cases.
     const pattern = /\{[^\}]+\}/g;
@@ -46,11 +48,8 @@ export function floc(message, ...args) {
 }
 
 function _consolePrint(printFunc, message, ...args) {
-    let {locMessage, unspentArgs} = floc(message, ...args);
-    if (unspentArgs?.length <= 0)
-        printFunc(MODULE_CONFIG.name, '|', locMessage, ...unspentArgs);
-    else
-        printFunc(MODULE_CONFIG.name, '|', locMessage);
+    let result = floc(message, ...args);
+    printFunc(MODULE_CONFIG.name, '|', ...result);
 }
 
 /// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.

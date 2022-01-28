@@ -1,6 +1,4 @@
-{{log '  HANDLEBARS player-claims.hbs'}}{{log .}}
 {{#each .~}}
-    {{log .}}
     <span class="claimant-image-container">
         <img class="claimant-image {{#if winner}}winner{{/if}}" area-label="{{name}}" src="{{img}}" data-claimant-uuid="{{uuid}}"/>
         <span class="looted-quantity">

@@ -252,14 +252,14 @@ export class SimpleLootSheet extends ActorSheet {
                 //[MODULE_CONFIG.passKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.passKey) || [],
             };
             for (let claimType of MODULE_CONFIG.claimTypes) {
-                log(ourFlags);
-                log(claimType);
+                //log(ourFlags);
+                //log(claimType);
                 if (!ourFlags || !ourFlags[MODULE_CONFIG.claimsKey]) {
                     data.claims[item.uuid][claimType] = [];
-                    log(' NO STUFF TO GET?');
+                    //log(' NO STUFF TO GET?');
                 }
                 else {
-                    log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
+                    //log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
                     data.claims[item.uuid][claimType] = ourFlags[MODULE_CONFIG.claimsKey]
                         .filter(claim => claim.claimType == claimType);
                 }
@@ -268,8 +268,8 @@ export class SimpleLootSheet extends ActorSheet {
 
             for (let claimType of MODULE_CONFIG.claimTypes) {
                 for (let claimantUuid of item.getFlag(MODULE_CONFIG.name, claimType) || []) {
-                    log(claimType, claimantUuid, typeof(claimantUuid));
-                    log((await canvas.tokens.getDocuments()).find(t=>t.uuid == claimantUuid));
+                    //log(claimType, claimantUuid, typeof(claimantUuid));
+                    //log((await canvas.tokens.getDocuments()).find(t=>t.uuid == claimantUuid));
                     let actor = null;//await fromUuid(claimantUuid.uuid);
                     if (!actor) {
                         //console.error('blah'); // TODO: Proper error message.
@@ -342,7 +342,7 @@ export class SimpleLootSheet extends ActorSheet {
         // Fallback to user's assigned character, if they have one.
         if (claimantUuids.length <= 0)
             claimantUuids = game.user.character ? [`Actor.${game.user.character.id}`] : []; // janky way to make it a uuid
-        log('new choice', claimantUuids);
+        //log('new choice', claimantUuids);
         if (claimantUuids.length <= 0) {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noClaimantAvailable`));
             return;
@@ -365,10 +365,10 @@ export class SimpleLootSheet extends ActorSheet {
             // Upgrade permissions.  Be sure we never lower them.
             permissions[id] = Math.max(2, permissions[id] ? Number(permissions[id]) : 0);
         }
-        log('new permissions', permissions);
+        //log('new permissions', permissions);
         //log('Permissions:', permissions);
-        log(this);
-        log('token comparison', this.token, canvas.tokens.controlled[0].document);
+        //log(this);
+        //log('token comparison', this.token, canvas.tokens.controlled[0].document);
         // TODO: Do these updates together.
         await this.token.update({
             overlayEffect: 'icons/svg/chest.svg',
@@ -376,7 +376,7 @@ export class SimpleLootSheet extends ActorSheet {
         await this.token.modifyActorDocument({
             permission: permissions,
         });
-        log('permissions after application', this.actor.data.permission);
+        //log('permissions after application', this.actor.data.permission);
     }
 
     async _onDistributeLootClick(event) {
@@ -448,12 +448,12 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         const element = event.currentTarget;
-        log('elements:', element, element.closest('[data-roll-table-uuid]'));
+        //log('elements:', element, element.closest('[data-roll-table-uuid]'));
         const tableUuid = $(element.closest('[data-roll-table-uuid]'))?.data('roll-table-uuid');
         const table = await fromUuid(tableUuid);
         if (!table)  {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noSuchTable`));
-            log('Was asked to find a table, but none existed with the given uuid:', tableUuid);
+            //log('Was asked to find a table, but none existed with the given uuid:', tableUuid);
             return;
         }
 
@@ -474,26 +474,14 @@ async function UseBetterTables (token, realTable) {
     // Clone the table so we can do whatever without worry.
     // Including just drawing without replacement.
     let table = realTable.clone({}, {}, {temporary:true});
-
-    //const brtBuilder = new BRTBuilder(table);
-    //const results = await brtBuilder.betterRoll();
-    //const br = new BetterResults(results);
-    /*
-    const betterResults = await br.buildResults(table);
-    const currencyData = br.getCurrencyData();
-    const lootCreator = new LootCreator(betterResults, currencyData);
-    await lootCreator.addCurrenciesToToken(token);
-    await lootCreator.addItemsToToken(token);
-    */
-
     const newLoot = {};
-    //const brtBuilder = new BRTBuilder(table);
-    //const results = await brtBuilder.betterRoll();
-    //const brtResults = new BetterResults(results);
-    //log('  BRT', brtBuilder, brtResults);
 
     // TODO: Manually do draw-without-replacement if the table is flagged as such.
-    // Since drawing from a compendium table flagged as such doesn't work (never locks-out results).
+    //       Since drawing from a compendium table flagged as such doesn't work
+    //       (never locks-out results).  Since we're making this module for us first,
+    //       and we're using Anne Gregersen's _Monster Loot_ in a particular way for
+    //       expediency, just give 1 of each result in the roll table.  Or, if it's
+    //       a BetterRollTable with a formula for quantities, use that instead of 1.
 
     let drawnItems = [];
     for (let result of table.data.results) {

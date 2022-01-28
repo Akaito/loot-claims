@@ -132,6 +132,7 @@ Hooks.once('init', async function() {
 
 Hooks.once('ready', () => {
     log('ready');
+    log('_onClaimClick()');
 
     if (game.user.isGM)
         socket.on(MODULE_CONFIG.socket, handleSocketGm);
@@ -140,7 +141,8 @@ Hooks.once('ready', () => {
 
     window.SimpleLootSheet = MODULE_CONFIG.functions;
 
-    console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));
+    // Just testing our format/localize helper.
+    //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));
 
     log('ready done');
 });
