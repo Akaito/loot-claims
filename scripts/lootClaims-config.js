@@ -1,4 +1,4 @@
-import { reset } from './module.js';
+import { reset } from './lootClaims-module.js';
 import { findLootTable } from './SimpleLootSheet.js';
 
 export const MODULE_CONFIG = {

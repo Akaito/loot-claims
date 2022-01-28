@@ -1,89 +1,8 @@
-import { MODULE_CONFIG } from './config.js';
+import { MODULE_CONFIG } from './lootClaims-config.js';
 import { SimpleLootSheet } from './SimpleLootSheet.js';
 
-/// "Format / LOCalize"
-/// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
-/// Returns the formatted and/or localized message, and the unspent args.
-export function floc(message, ...args) {
-    if (!(typeof message == 'string' || message instanceof String)) return result;
-
-    let result = {
-        locMessage: message,
-        data,
-        args,
-    };
-
-    console.log('floc()');
-    console.log(Array.isArray(args));
-    console.log(args);
-
-    if (!(typeof message == 'string' || message instanceof String)) return result;
-    //if (!game.i18n.translations[MODULE_CONFIG.name].includes(message)) return result;
-
-    result.locMessage = game.i18n.localize(message);
-    if (result.unspentArgs?.length <= 0) return result;
-    //if (!game.i18n.has(message)) return result;
-
-    // This bit is from inside Foundry's game.i18n.format().
-    // Just needed to get more information out of the process.
-    const fmt = /\{[^\}]+\}/g;
-    result.locMessage = result.locMessage.replace(fmt, captured => {
-        try {
-            const argName = captured.slice(1, -1);
-            // Have to significantly change up how this works since we're not using the `data={}` arg style.
-            for ([index, value] of result.unspentArgs.entries()) {
-                if (!Object.keys(value).includes(argName)) continue;
-
-                const replacement = value[argName];
-                delete result.unspentArgs[argName];
-                console.log('spent', argName, 'while floc()ing');
-                return replacement;
-            }
-            return captured;
-        }
-        catch (_) {
-            return captured;
-        }
-    });
-    console.log('floc() result', result, 'vs incoming args', args);
-    return result;
-}
-
-function _consolePrint(printFunc, message, ...args) {
-    let {locMessage, unspentArgs} = floc(message, ...args);
-    if (unspentArgs?.length <= 0)
-        printFunc(MODULE_CONFIG.name, '|', locMessage, ...unspentArgs);
-    else
-        printFunc(MODULE_CONFIG.name, '|', locMessage);
-}
-
-/// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.
-export function error(message, ...args) {
-    conError(message, ...args);
-    uiError(message, ...args);
-}
-export function conError(message, ...args) {
-    _consolePrint(console.log, message, ...args);
-}
-export function uiError(message, ...args) {
-    ui.notifications.error(`${MODULE_CONFIG.nameHuman} | ${floc(message, ...args)}`);
-}
-
-export function log(message, ...args) {
-    console.log('log()', message, args);
-    _consolePrint(console.log, message, ...args);
-    /*
-    if (game.i18n.translations[MODULE_CONFIG.name].includes(message)) {
-        try {
-            message = floc(message, ...args);
-            console.log(`${MODULE_CONFIG.name} |`, message);
-        } catch(_) {
-            message = game.i18n.localize(message);
-            console.log(`${MODULE_CONFIG.name} |`, message;
-        }
-    }
-    */
-}
+import * as util from './lootClaims-util.js';
+const log = util.log; // still want this short, convenient name
 
 export class ClaimantClaim {
     // Future: allow claiming only some quantity.
@@ -363,7 +282,7 @@ Hooks.once('ready', () => {
 
     window.SimpleLootSheet = MODULE_CONFIG.functions;
 
-    floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]);
+    console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));
 
     log('ready done');
 });
