@@ -284,34 +284,6 @@ export class SimpleLootSheet extends ActorSheet {
             }
 
             log('sheet\'s getData()\'s data.claims:', data.claims);
-
-            for (const key of Object.keys(ourFlags)) {
-                break;
-                if (!key.startsWith('claim~')) continue;
-
-                const value = ourFlags[key];
-                const claimantUuid = uuidFromClaimFlag(key);
-                let actor = await fromUuid(claimantUuid);
-                if (!actor) {
-                    //log(`Skipping Actor ID in claims flags which didn't match an actor: ${key}`);
-                    continue;
-                }
-                actor = actor.actor ? actor.actor : actor; // Get Actor5e from TokenDocument5e if needed.
-
-                let lootedByUuid = uuidFromClaimFlag(ourFlags[MODULE_CONFIG.lootedByKey]);
-                //log(item.name, 'looted by', lootedByUuid, 'we are', claimantUuid);
-
-                let claimant = {
-                    uuid: claimantUuid,
-                    name: actor.token?.name || actor.name,
-                    img: actor.token?.data?.img || actor.img,
-                    winner: lootedByUuid == claimantUuid,
-                };
-                switch (value) {
-                    case MODULE_CONFIG.needKey: data.claims[item.uuid].needs.push(claimant); break;
-                    case MODULE_CONFIG.greedKey: data.claims[item.uuid].greeds.push(claimant); break;
-                }
-            }
         }
 
         log('--- END getData()');
@@ -329,18 +301,17 @@ export class SimpleLootSheet extends ActorSheet {
         //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
-        let itemLootFlags = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {};
         //log('item', item);
         //log('itemLootFlags', itemLootFlags);
 
-        const claimType = element.closest('.player-claims').dataset.claimType;
+        let claimType = element.closest('.player-claims').dataset.claimType;
 
         let claimantUuids = canvas.tokens.controlled // Prefer currently-selected tokens we own.
             .filter(token => token.isOwner)
             .map(token => token.actor?.uuid)
             .filter(uuid => uuid != undefined)
             // Don't make a claim again if we already have one of the same type being asked for.
-            .filter(uuid => itemLootFlags[uuid] ? itemLootFlags[uuid] != claimType : true)
+            //.filter(uuid => itemLootFlags[uuid] ? itemLootFlags[uuid] != claimType : true)
         ;
         // Fallback to user's assigned character, if they have one.
         if (claimantUuids.length <= 0)
@@ -349,6 +320,20 @@ export class SimpleLootSheet extends ActorSheet {
         if (claimantUuids.length <= 0) {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noClaimantAvailable`));
             return;
+        }
+        
+
+        // If clicking on the same claim type on the same item the player's already in,
+        // cancel it back to a "pass" claim.
+        //if (let existingClaims = element.find('[data-claimant-uuid]')
+        if (claimantUuids?.length == 1 && claimType != 'pass')  {
+            if ((item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {})
+                ?.find(claim => claim.uuid == claimantUuids[0])
+                ?.claimType == claimType)
+            {
+                claimType = 'pass';
+                log('Already have this claim; flipping back to unspent.');
+            }
         }
 
         await makeClaim(claimantUuids, claimType, item.uuid);
