@@ -81,7 +81,7 @@ export function decodeUuidFromFlag(flag) {
     return flag?.replace('claim~','')?.replaceAll('~','.');
 }
 export function uuidFromClaimFlag(flag) {
-    log('uuidFromClaimFlag', flag);
+    //log('uuidFromClaimFlag', flag);
     return decodeUuidFromFlag(flag?.replace('claim~', ''));
 }
 export function claimFlagFromUuid(uuid) {

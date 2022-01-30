@@ -103,22 +103,68 @@ function shuffleArray(arr) {
     return arr;
 }
 
-async function giveLootTo(sourceActor, sourceItem, claimantUuids) {
-    if (claimantUuids.length <= 0) return;
+async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
+    if (claimantClaims.length <= 0) return;
 
     //log('sourceItem', sourceItem);
     // Shuffle the claimant array so we can have a random order in which people get the loot.
     // Also ensure we were given UUIDs, not claim flags.  `uuidFromClaimFlag()` is idemptotent.
     // TODO: Chat card, Dice So Nice, something else?
-    claimantUuids = shuffleArray(claimantUuids).map(uuid => uuidFromClaimFlag(uuid));
+    //claimantUuids = shuffleArray(claimantUuids).map(uuid => uuidFromClaimFlag(uuid));
+    claimantClaims = shuffleArray(claimantClaims);
 
     // Figure out who's getting how much of the loot.
     // We don't deal in fractional quantities.
     const sourceItemQuantity = Math.floor(Number(sourceItem.data?.data?.quantity)) || 1;
-    const quantityRemainder = sourceItemQuantity % claimantUuids.length; // dnd5e
-    const quantityEvenlySharable = Math.floor(sourceItemQuantity / claimantUuids.length);
+    const quantityRemainder = sourceItemQuantity % claimantClaims.length; // dnd5e
+    const quantityEvenlySharable = Math.floor(sourceItemQuantity / claimantClaims.length);
+    console.log(MODULE_CONFIG.emoji, sourceItemQuantity, quantityRemainder, quantityEvenlySharable);
 
-    return;
+    let newItemData = duplicate(sourceItem);
+    // Clear claim keys, and set where the item we're handing out came from.
+    newItemData.flags[MODULE_CONFIG.name] = {
+        'looted-from-uuid': sourceActor.uuid,
+        'looted-from-name': sourceActor.name,
+    };
+    // The recipient's new item shouldn't be equipped, since it's just been looted.
+    if (newItemData.data?.equipped === true) { // dnd5e, possibly other systems TODO: move to module config handles
+        newItemData.data.equipped = false;
+    }
+
+    // Hand out the items
+    for (let [claimantIndex, claimantClaim] of claimantClaims.entries()) {
+        const gettingSomeRemainder = claimantIndex < quantityRemainder;
+        // If not everyone is getting some, and we've run out of the remainder, we're done.
+        log('hand out for', {quantityEvenlySharable, quantityRemainder, claimantIndex, gettingSomeRemainder});
+        if (quantityEvenlySharable <= 0 && !gettingSomeRemainder) break;
+
+        let parent = await fromUuid(claimantClaim.uuid);
+        parent = parent?.actor || parent; // To make tokens and actors the "same".
+        if (!parent) {
+            log('no parent');
+            error('Skipping claimant UUID for which no actor could be found', claimantClaim.uuid, 'named', claimantClaim.name);
+            continue;
+        }
+
+        mergeObject(newItemData, {
+            data: {
+                quantity: quantityEvenlySharable + (gettingSomeRemainder ? 1 : 0), // dnd5e
+            },
+        });
+        console.log(MODULE_CONFIG.emoji, 'newItemData', newItemData);
+        const recipientItem = await Item.create(newItemData, {
+            parent,
+        });
+        console.log(MODULE_CONFIG.emoji, 'recipientItem', recipientItem);
+    }
+
+    // Mark the lootee's item as having been looted.
+    // TODO: Mark array of winners, not just single, due to stack-split wins?
+    // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
+    // TODO: Array of all loot winners (with quantities?); not a single 'winner' UUID.
+    await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
+
+    /*
     // Pick a winner.
     const winnerUuid = uuidFromClaimFlag(claimantUuids[Math.floor(Math.random() * claimantUuids.length)]);
 
@@ -188,11 +234,7 @@ async function giveLootTo(sourceActor, sourceItem, claimantUuids) {
         });
         //log('recipientItem', recipientItem);
     }
-
-    // Mark the lootee's item as having been looted.
-    // TODO: Mark array of winners, not just single, due to stack-split wins?
-    // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
-    await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, winnerUuid);
+    */
 }
 
 export class SimpleLootSheet extends ActorSheet {
@@ -398,9 +440,9 @@ export class SimpleLootSheet extends ActorSheet {
 
             // Find and collect the set of needs and greeds claims.
             const claims = lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey);
-            const needs = claims.filter(claim => claim.claimType == 'need');
-            const greeds = claims.filter(claim => claim.claimType == 'greed');
-            log('needs', needs); log('greeds', greeds);
+            if (!claims) continue;
+            const needs = claims.filter(claim => claim.claimType == 'need') || [];
+            const greeds = claims.filter(claim => claim.claimType == 'greed') || [];
 
             // Roll among the prioritized set of claimants (needs beat greeds).
             let claimantIds = needs.length > 0 ? needs : greeds;
