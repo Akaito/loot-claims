@@ -162,6 +162,9 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     // TODO: Mark array of winners, not just single, due to stack-split wins?
     // TODO: Distribute all updates in one update.  Optimization, and prevents sheet flicker.
     // TODO: Array of all loot winners (with quantities?); not a single 'winner' UUID.
+    // TODO: Doing too many items at once was failing to flag the source item, despite the new item being created.
+    //       Here's a hack for now.  Which still doesn't entirely work.
+    await new Promise(resolve => setTimeout(resolve, 1000));
     await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
 
     /*
@@ -433,14 +436,18 @@ export class SimpleLootSheet extends ActorSheet {
 
         //log('items:');
         for (const [lootItemId, lootItem] of this.actor.items.entries()) {
+            console.log('per item start for', lootItem.name);
             // Skip items that've already been looted.
             if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
+            console.log('  not yet looted');
             // Also skip hidden items.
             if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
+            console.log('  not hidden');
 
             // Find and collect the set of needs and greeds claims.
             const claims = lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey);
             if (!claims) continue;
+            console.log('  has claims');
             const needs = claims.filter(claim => claim.claimType == 'need') || [];
             const greeds = claims.filter(claim => claim.claimType == 'greed') || [];
 
@@ -448,6 +455,7 @@ export class SimpleLootSheet extends ActorSheet {
             let claimantIds = needs.length > 0 ? needs : greeds;
             // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
+            console.log('  has claimants');
 
             giveLootTo(this.actor, lootItem, claimantIds);
         }
