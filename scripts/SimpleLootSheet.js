@@ -259,7 +259,7 @@ export class SimpleLootSheet extends ActorSheet {
                     log(' NO STUFF TO GET?');
                 }
                 else {
-                    log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
+                    //log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
                     data.claims[item.uuid][claimType] = ourFlags[MODULE_CONFIG.claimsKey]
                         .filter(claim => claim.claimType == claimType);
                 }
@@ -283,7 +283,7 @@ export class SimpleLootSheet extends ActorSheet {
                 }
             }
 
-            log('sheet\'s getData() claims:', data.claims);
+            log('sheet\'s getData()\'s data.claims:', data.claims);
 
             for (const key of Object.keys(ourFlags)) {
                 break;
