@@ -369,7 +369,7 @@ export class SimpleLootSheet extends ActorSheet {
         // cancel it back to a "pass" claim.
         //if (let existingClaims = element.find('[data-claimant-uuid]')
         if (claimantUuids?.length == 1 && claimType != 'pass')  {
-            if ((item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || {})
+            if ((item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || [])
                 ?.find(claim => claim.uuid == claimantUuids[0])
                 ?.claimType == claimType)
             {
