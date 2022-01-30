@@ -57,7 +57,8 @@ export async function reset(actor, {prompt=true} = {}) {
         //log('should attempt reset on', item, item.name, item.data?.flags);
         const ourFlags = item.data?.flags[MODULE_CONFIG.name];
         if (ourFlags) {
-            log('generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
+            // TODO: HERE: THIS LOOKS CORRECT.
+            console.log(MODULE_CONFIG.logPrefix, 'generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
             if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
                 toBeDeleted.push(item.id);
                 // TODO: Don't just reset loot like this, but remove it.  Keeping this here for now for quicker testing.

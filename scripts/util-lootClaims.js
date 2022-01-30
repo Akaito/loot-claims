@@ -9,7 +9,7 @@ export function unique(value, index, array) {
 
 /// "Format / LOCalize"
 /// Can be called like `floc('some-loc-key', {formatStringFieldName='banana'})`.
-/// Returns the formatted and/or localized message, and the unspent args.
+/// Returns the formatted and/or localized message, and the provided args.
 export function floc(message, ...args) {
     // Just a local object to help variable names make sense.
     // Could see this function changing later to directly return result.
@@ -49,7 +49,7 @@ export function floc(message, ...args) {
 
 function _consolePrint(printFunc, message, ...args) {
     let result = floc(message, ...args);
-    printFunc(MODULE_CONFIG.name, '|', ...result);
+    printFunc(MODULE_CONFIG.emoji, MODULE_CONFIG.name, '|', ...result);
 }
 
 /// Can be called like `error('some-loc-key', {formatStringFieldName='banana'})`.

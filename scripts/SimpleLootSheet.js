@@ -220,7 +220,7 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
     async getData() {
-        log('getData()');
+        log('--- BEGIN getData()');
         let data = super.getData();
         data.MODULE_CONFIG = MODULE_CONFIG;
 
@@ -251,15 +251,15 @@ export class SimpleLootSheet extends ActorSheet {
                 //[MODULE_CONFIG.greedKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.greedKey) || [],
                 //[MODULE_CONFIG.passKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.passKey) || [],
             };
+            log('getData()\'s ourFlags', ourFlags);
             for (let claimType of MODULE_CONFIG.claimTypes) {
-                //log(ourFlags);
-                //log(claimType);
+                log(`looking for [${claimType}] claims on item ${item.name}`, item);
                 if (!ourFlags || !ourFlags[MODULE_CONFIG.claimsKey]) {
                     data.claims[item.uuid][claimType] = [];
-                    //log(' NO STUFF TO GET?');
+                    log(' NO STUFF TO GET?');
                 }
                 else {
-                    //log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
+                    log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
                     data.claims[item.uuid][claimType] = ourFlags[MODULE_CONFIG.claimsKey]
                         .filter(claim => claim.claimType == claimType);
                 }
@@ -282,6 +282,8 @@ export class SimpleLootSheet extends ActorSheet {
                     });
                 }
             }
+
+            log('sheet\'s getData() claims:', data.claims);
 
             for (const key of Object.keys(ourFlags)) {
                 break;
@@ -312,6 +314,7 @@ export class SimpleLootSheet extends ActorSheet {
             }
         }
 
+        log('--- END getData()');
         //log('CLAIMS laid out for hbs', data.claims);
         return data;
     }
@@ -402,28 +405,24 @@ export class SimpleLootSheet extends ActorSheet {
         */
 
         //log('items:');
-        for (const [lootedItemId, lootedItem] of this.actor.items.entries()) {
+        for (const [lootItemId, lootItem] of this.actor.items.entries()) {
             // Skip items that've already been looted.
-            if (lootedItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
+            if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
+            // Also skip hidden items.
+            if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
 
             // Find and collect the set of needs and greeds claims.
-            const needs = Object.entries(
-                lootedItem.data.flags[MODULE_CONFIG.name] || {}
-                )
-                ?.filter(entry => entry[1] == MODULE_CONFIG.needKey)
-                ?.map(entry => entry[0]);
-            const greeds = Object.entries(
-                lootedItem.data.flags[MODULE_CONFIG.name] || {}
-                )
-                ?.filter(entry => entry[1] == MODULE_CONFIG.greedKey)
-                ?.map(entry => entry[0]);
+            const claims = lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey);
+            const needs = claims.filter(claim => claim.claimType == 'need');
+            const greeds = claims.filter(claim => claim.claimType == 'greed');
+            log('needs', needs); log('greeds', greeds);
 
             // Roll among the prioritized set of claimants (needs beat greeds).
             let claimantIds = needs.length > 0 ? needs : greeds;
             // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
 
-            giveLootTo(this.actor, lootedItem, claimantIds);
+            giveLootTo(this.actor, lootItem, claimantIds);
         }
     }
 

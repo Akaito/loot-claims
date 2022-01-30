@@ -28,7 +28,9 @@
             <!-- <th>{{localize 'loot-claims.pass'}}</th> -->
         </tr>
 
+        {{log 'sheet render | about to each-claims. we are:'}}{{log .}}
         {{#each claims }}
+            {{log 'sheet render | in a claim'}}{{log .}}
             <tr class="item {{#if lootedBy}}looted{{/if}}" data-item-uuid="{{uuid}}">
                 <td class="item-brief">
                     <!-- <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div> -->
