@@ -164,80 +164,8 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     // TODO: Array of all loot winners (with quantities?); not a single 'winner' UUID.
     // TODO: Doing too many items at once was failing to flag the source item, despite the new item being created.
     //       Here's a hack for now.  Which still doesn't entirely work.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
-
-    /*
-    // Pick a winner.
-    const winnerUuid = uuidFromClaimFlag(claimantUuids[Math.floor(Math.random() * claimantUuids.length)]);
-
-    let newItemData = duplicate(sourceItem);
-    log('newItemData', newItemData);
-    // Clear claim keys, and set where the item we're handing out came from.
-    newItemData.flags[MODULE_CONFIG.name] = {
-        'looted-from-uuid': sourceActor.uuid,
-        'looted-from-name': sourceActor.name,
-    };
-    // The recipient's new item shouldn't be equipped, since it's just been looted.
-    if (recipientItemData.data?.equipped === true) { // dnd5e, possibly other systems TODO: move to module config handles
-        recipientItemData.data.equipped = false;
-    }
-
-    winnerUuid = decodeUuidFromFlag(winnerUuid);
-    claimantUuids = claimantUuids.map(uuid => decodeUuidFromFlag(uuid));
-    log('claimantUuids', claimantUuids);
-
-    let quantityWinner = 1, quantityOthers = 0, oneAtATime = false;
-    // Typical case for a singular item, or a stack of items sufficient for everyone to get one.
-    const itemQuantity = Math.floor(Number(newItemData.data.quantity));
-    if (1 < itemQuantity) {
-        // Not enough for everyone to get at least 1: hand them out one at a time.
-        if (itemQuantity < claimantUuids.length) {
-            // Special-case a stack greater than 1, but less than the number of claimants/recipients.
-            // Behavior above always has the winner getting the remainder, or what would be the whole
-            // stack in this case.  Instead, we'd want to hand out singles to a random subset of all claimants.
-            // TODO: Adjust how we choose and mark winners, so it's all in one place (the caller of giveLootTo maybe).
-            oneAtATime = true;
-            claimantUuids = shuffleArray(claimantUuids);
-        }
-        // Enough for everyone to get at least 1: winner takes the remainder.
-        else {
-            quantityOthers = Math.floor(itemQuantity / claimantUuids.length);
-            quantityWinner = quantityOthers + itemQuantity % claimantUuids.length;
-        }
-    }
-    log('quantity winner', quantityWinner, 'others', quantityOthers, 'one at a time?', oneAtATime);
-
-    //log('recipientItemData', recipientItemData);
-    for (const [recipientUuidIndex, recipientUuid] of claimantUuids.entries()) {
-        //log('recipientUuid', recipientUuid);
-        let parent = await fromUuid(recipientUuid);
-        parent = parent.actor || parent; // To make tokens and actors the "same".
-        if (!oneAtATime) {
-            const currentlyAtWinner = recipientUuid == winnerUuid;
-            if (!currentlyAtWinner && quantityOthers == 0) continue;
-            mergeObject(newItemData, {
-                data: {
-                    quantity: currentlyAtWinner ? quantityWinner : quantityOthers,
-                },
-            });
-        }
-        // Special case of handing out a stack of size < claimant count; giving one to a random subset.
-        else {
-            // Stop if we've already handed all the items out.
-            if (recipientUuidIndex + 1 > itemQuantity) break;
-            mergeObject(newItemData, {
-                data: {
-                    quantity: 1,
-                },
-            });
-        }
-        const recipientItem = await Item.create(newItemData, {
-            parent,
-        });
-        //log('recipientItem', recipientItem);
-    }
-    */
+    //await new Promise(resolve => setTimeout(resolve, 1000));
+    //await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
 }
 
 export class SimpleLootSheet extends ActorSheet {
@@ -415,7 +343,6 @@ export class SimpleLootSheet extends ActorSheet {
     async _onDistributeLootClick(event) {
         event.preventDefault();
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
-        //if (!this.iamResponsibleGm) {
         if (!iamResponsibleGM()) {
             ui.notifications.error("Only the arbitrarily-chosen responsible GM can distribute loot.");
             return;
@@ -434,20 +361,17 @@ export class SimpleLootSheet extends ActorSheet {
         fromUuid on the stand-alone server GM yields an Actor5e (or token document if unlinked)
         */
 
+        let itemUpdates = [];
         //log('items:');
         for (const [lootItemId, lootItem] of this.actor.items.entries()) {
-            console.log('per item start for', lootItem.name);
             // Skip items that've already been looted.
             if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
-            console.log('  not yet looted');
             // Also skip hidden items.
             if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
-            console.log('  not hidden');
 
             // Find and collect the set of needs and greeds claims.
             const claims = lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey);
             if (!claims) continue;
-            console.log('  has claims');
             const needs = claims.filter(claim => claim.claimType == 'need') || [];
             const greeds = claims.filter(claim => claim.claimType == 'greed') || [];
 
@@ -455,10 +379,25 @@ export class SimpleLootSheet extends ActorSheet {
             let claimantIds = needs.length > 0 ? needs : greeds;
             // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
-            console.log('  has claimants');
 
             giveLootTo(this.actor, lootItem, claimantIds);
+
+            //await lootItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
+            // TODO: Store how much went to who.
+            itemUpdates.push({
+                _id: lootItem.id,
+                //id: lootItem.id,
+                flags: {
+                    [MODULE_CONFIG.name]: {
+                        [MODULE_CONFIG.lootedByKey]: claimantIds,
+                    },
+                },
+            });
         }
+
+        // Mark any items which were looted.
+        log('itemUpdates from _onDistributeLootClick():', itemUpdates);
+        await this.actor.updateEmbeddedDocuments('Item', itemUpdates);
     }
 
     async _onResetLootClick(event) {
