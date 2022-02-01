@@ -65,6 +65,7 @@ Suggested modules to go with this one:
   **A:** The two _should_ work all right together, but this is untested.  Personally, lootsheetnpc5e kept breaking tokens on me anytime Foundry updated.  Making them inaccessible even to the GM.  This may have been user error on my part, or issues withing that module itself; uncertain.  So I wrote this hopefully-simpler module to not have to rely on that one.
 
 - **Q:** Will systems other than dnd5e be supported?
+  
   **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it doing the basic thing I want first.
 
 ---
@@ -86,6 +87,8 @@ TODO/NEXT:
 - [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Implement "Steal"?  Future feature _maybe_.
 ---
+
+
 
 
 # How to use this Template to create a versioned Release
