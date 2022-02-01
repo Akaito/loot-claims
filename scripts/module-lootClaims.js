@@ -13,7 +13,7 @@ export async function reset(actor, {prompt=true} = {}) {
             title: MODULE_CONFIG.title,
             // TODO: Give more context.  Like one token, scene of tokens, number of tokens, etc.
             content: game.i18n.localize(`${MODULE_CONFIG.name}.confirmResetMessage`),
-            defaultYes: false,
+            defaultYes: true,
             rejectClose: false,
         }) === true) {
             reset(actor, {prompt:false});
@@ -91,6 +91,8 @@ export function claimFlagFromUuid(uuid) {
 Hooks.once('init', async function() {
     log(`${MODULE_CONFIG.name} | init`);
     //libWrapper.register('loot-claims');
+
+    //MODULE_CONFIG.prng = new MersenneTwister(); // Uses timestamp as seed by default.
 
     // for the server-side
     // TODO: should this second param be async?

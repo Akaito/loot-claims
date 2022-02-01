@@ -17,6 +17,8 @@ export const MODULE_CONFIG = {
         reset,
     },
 
+    //prng: null, // Becomes a Foundry MersenneTwister during module init.
+
     messageTypes: {
         CLAIM_REQUEST: 'claim-request',
     },
@@ -35,6 +37,11 @@ export const MODULE_CONFIG = {
         'Assistant GM',
         'Game Master',
     ],
+
+    /// Caution: If this has too small a range relative to the number of claimants
+    /// for any given item, you can get a loop of attempts to create a non-tied roll.
+    rollMaxValue: 100,
+    //rollFormula: '1d100',
 
     /////
     // getFlag() / setFlag() stuff.

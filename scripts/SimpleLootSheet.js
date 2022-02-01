@@ -11,6 +11,8 @@ export class ClaimantClaim {
         // Required.
         this.uuid = uuid;
         this.claimType = claimType;
+        this.roll = false; // to be replaced by a Roll, or a numeric value.
+        this.receivedQuantity = 0; // updated after loot is doled out.
         // Extra for ease of use (mostly in Handlebars).
         this.name = name;
         this.img = img;
@@ -103,6 +105,42 @@ function shuffleArray(arr) {
     return arr;
 }
 
+function getClaimantRollsOld(claimantUuids) {
+    let results = [];
+    results.push();
+    for (let uuid of claimantUuids) {
+        let roll;
+        // TODO: Instead of this dumb while that can loop forever,
+        //       let rolls tie and figure out a tie-breaker instead.
+        while (!roll || results.find(result => result.total == roll.total)) {
+            roll = new Roll(MODULE_CONFIG.rollFormula).roll({async: false});
+        }
+        results.push({
+            uuid,
+            roll,
+        });
+    }
+    results.sort((a,b) => a.roll.total - b.roll.total);
+    log(MODULE_CONFIG.emoji, 'claimant rolls, sorted, etc.', results);
+    return results;
+}
+
+function doClaimantRolls(claimantClaims) {
+    let rollOutcomes = [...Array(Math.max(MODULE_CONFIG.rollMaxValue, claimantClaims.length)).keys()];
+    // Outcomes are 0 through 1-less-than-max.
+    // Just overwrite invalid zero with the missing max value.
+    rollOutcomes[0] = rollOutcomes[-1] + 1;
+    for (let [claimIndex,claim] of claimantClaims.entries()) {
+        //const outcomeIndex = Math.floor(Math.random() * rollOutcomes.length);
+        const outcomeIndex = Math.floor(MersenneTwister.random() * rollOutcomes.length);
+        // TODO: Provide a real Roll instance.
+        claim.roll = {total: rollOutcomes[outcomeIndex]};
+        rollOutcomes[outcomeIndex] = rollOutcomes.pop();
+        //claimantClaims[index].roll = new Roll(`1d${MODULE_CONFIG.rollMaxValue}`);
+        //claimantClaims[index].roll = {total: rollValue};
+    }
+}
+
 async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     if (claimantClaims.length <= 0) return;
 
@@ -111,7 +149,12 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     // Also ensure we were given UUIDs, not claim flags.  `uuidFromClaimFlag()` is idemptotent.
     // TODO: Chat card, Dice So Nice, something else?
     //claimantUuids = shuffleArray(claimantUuids).map(uuid => uuidFromClaimFlag(uuid));
-    claimantClaims = shuffleArray(claimantClaims);
+    //claimantClaims = shuffleArray(claimantClaims);
+    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims before rolls:', claimantClaims);
+    doClaimantRolls(claimantClaims);
+    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims after rolls:', claimantClaims);
+    claimantClaims.sort((a,b) => b.roll.total - a.roll.total); // sort descending
+    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims after sort:', claimantClaims);
 
     // Figure out who's getting how much of the loot.
     // We don't deal in fractional quantities.
