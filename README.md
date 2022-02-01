@@ -54,7 +54,7 @@ Have to learn more about those.
 Items players loot are flagged with what they were looted from.
 This is currently unused, but could be neat; for showing players where they got some of their things.
 
-Suggested modules to go with this one:
+### Suggested modules
 - [Better Rolltables](https://foundryvtt.com/packages/better-rolltables/)
   Allows richer data to be set on roll tables.
   Such as a dice formula for how many of a table's result's item is given.
