@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
-import { decodeUuidFromFlag, encodeUuidForFlag, uuidFromClaimFlag } from './module-lootClaims.js';
+import { encodeUuidForFlag } from './module-lootClaims.js';
 import { iamResponsibleGM } from './socket-lootClaims.js';
 import { handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
@@ -26,7 +26,6 @@ export class ClaimantClaim {
 /// - https://discord.com/channels/170995199584108546/811676497965613117/903652184003055677
 /// - https://discord.com/channels/170995199584108546/670336275496042502/835549329598840903
 async function makeClaim(claimantUuids, claimType, itemUuid) {
-    log('makeClaim()', claimantUuids, claimType, itemUuid);
 
     const message = {
         type: MODULE_CONFIG.messageTypes.CLAIM_REQUEST,
@@ -42,8 +41,6 @@ async function makeClaim(claimantUuids, claimType, itemUuid) {
         new Promise(resolve => {
             // TODO: Move response to a function above this scope, so the GM user can call it, too?
             socket.emit(MODULE_CONFIG.socket, message, response => {
-                    //log('GOT A REQUEST RESPONSE!');
-                    //log(response);
                     ui.notifications.warn("Got request response!");
                     resolve(response);
                 }
@@ -105,26 +102,6 @@ function shuffleArray(arr) {
     return arr;
 }
 
-function getClaimantRollsOld(claimantUuids) {
-    let results = [];
-    results.push();
-    for (let uuid of claimantUuids) {
-        let roll;
-        // TODO: Instead of this dumb while that can loop forever,
-        //       let rolls tie and figure out a tie-breaker instead.
-        while (!roll || results.find(result => result.total == roll.total)) {
-            roll = new Roll(MODULE_CONFIG.rollFormula).roll({async: false});
-        }
-        results.push({
-            uuid,
-            roll,
-        });
-    }
-    results.sort((a,b) => a.roll.total - b.roll.total);
-    log(MODULE_CONFIG.emoji, 'claimant rolls, sorted, etc.', results);
-    return results;
-}
-
 function doClaimantRolls(claimantClaims) {
     // NOTE: Potential to have weird, non-normal-faced dice with a high enough number of claimants.
     let rollOutcomes = [...Array(Math.max(MODULE_CONFIG.rollMaxValue, claimantClaims.length)).keys()];
@@ -145,24 +122,19 @@ function doClaimantRolls(claimantClaims) {
 async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     if (claimantClaims.length <= 0) return;
 
-    //log('sourceItem', sourceItem);
     // Shuffle the claimant array so we can have a random order in which people get the loot.
     // Also ensure we were given UUIDs, not claim flags.  `uuidFromClaimFlag()` is idemptotent.
     // TODO: Chat card, Dice So Nice, something else?
     //claimantUuids = shuffleArray(claimantUuids).map(uuid => uuidFromClaimFlag(uuid));
     //claimantClaims = shuffleArray(claimantClaims);
-    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims before rolls:', claimantClaims);
     doClaimantRolls(claimantClaims);
-    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims after rolls:', claimantClaims);
     claimantClaims.sort((a,b) => b.roll.total - a.roll.total); // sort descending
-    console.log(MODULE_CONFIG.emoji, 'giveLootTo() -- claims after sort:', claimantClaims);
 
     // Figure out who's getting how much of the loot.
     // We don't deal in fractional quantities.
     const sourceItemQuantity = Math.floor(Number(sourceItem.data?.data?.quantity)) || 1;
     const quantityRemainder = sourceItemQuantity % claimantClaims.length; // dnd5e
     const quantityEvenlySharable = Math.floor(sourceItemQuantity / claimantClaims.length);
-    console.log(MODULE_CONFIG.emoji, sourceItemQuantity, quantityRemainder, quantityEvenlySharable);
 
     let newItemData = duplicate(sourceItem);
     // Clear claim keys, and set where the item we're handing out came from.
@@ -179,13 +151,11 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     for (let [claimantIndex, claimantClaim] of claimantClaims.entries()) {
         const gettingSomeRemainder = claimantIndex < quantityRemainder;
         // If not everyone is getting some, and we've run out of the remainder, we're done.
-        log('hand out for', {quantityEvenlySharable, quantityRemainder, claimantIndex, gettingSomeRemainder});
         if (quantityEvenlySharable <= 0 && !gettingSomeRemainder) break;
 
         let parent = await fromUuid(claimantClaim.uuid);
         parent = parent?.actor || parent; // To make tokens and actors the "same".
         if (!parent) {
-            log('no parent');
             error('Skipping claimant UUID for which no actor could be found', claimantClaim.uuid, 'named', claimantClaim.name);
             continue;
         }
@@ -195,12 +165,12 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
                 quantity: quantityEvenlySharable + (gettingSomeRemainder ? 1 : 0), // dnd5e
             },
         });
-        console.log(MODULE_CONFIG.emoji, 'newItemData', newItemData);
+        //console.log(MODULE_CONFIG.emoji, 'newItemData', newItemData);
 
         const recipientItem = await Item.create(newItemData, {
             parent,
         });
-        console.log(MODULE_CONFIG.emoji, 'recipientItem', recipientItem);
+        //console.log(MODULE_CONFIG.emoji, 'recipientItem', recipientItem);
     }
 
     // Mark the lootee's item as having been looted.
@@ -238,7 +208,7 @@ export class SimpleLootSheet extends ActorSheet {
     }
 
     async getData() {
-        log('--- BEGIN getData()');
+        //log('--- BEGIN getData()');
         let data = super.getData();
         data.MODULE_CONFIG = MODULE_CONFIG;
 
@@ -269,15 +239,11 @@ export class SimpleLootSheet extends ActorSheet {
                 //[MODULE_CONFIG.greedKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.greedKey) || [],
                 //[MODULE_CONFIG.passKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.passKey) || [],
             };
-            log('getData()\'s ourFlags', ourFlags);
             for (let claimType of MODULE_CONFIG.claimTypes) {
-                log(`looking for [${claimType}] claims on item ${item.name}`, item);
                 if (!ourFlags || !ourFlags[MODULE_CONFIG.claimsKey]) {
                     data.claims[item.uuid][claimType] = [];
-                    log(' NO STUFF TO GET?');
                 }
                 else {
-                    //log(' SHOULD GET STUFF', ourFlags[MODULE_CONFIG.claimsKey]);
                     data.claims[item.uuid][claimType] = ourFlags[MODULE_CONFIG.claimsKey]
                         .filter(claim => claim.claimType == claimType);
                 }
@@ -286,8 +252,6 @@ export class SimpleLootSheet extends ActorSheet {
 
             for (let claimType of MODULE_CONFIG.claimTypes) {
                 for (let claimantUuid of item.getFlag(MODULE_CONFIG.name, claimType) || []) {
-                    //log(claimType, claimantUuid, typeof(claimantUuid));
-                    //log((await canvas.tokens.getDocuments()).find(t=>t.uuid == claimantUuid));
                     let actor = null;//await fromUuid(claimantUuid.uuid);
                     if (!actor) {
                         //console.error('blah'); // TODO: Proper error message.
@@ -300,18 +264,15 @@ export class SimpleLootSheet extends ActorSheet {
                     });
                 }
             }
-
-            log('sheet\'s getData()\'s data.claims:', data.claims);
         }
 
-        log('--- END getData()');
+        //log('--- END getData()');
         //log('CLAIMS laid out for hbs', data.claims);
         return data;
     }
 
 
     async _onClaimClick(event) {
-        log('_onClaimClick()');
         event.preventDefault();
         const element = event.currentTarget;
         const itemUuid = element.closest('.item').dataset.itemUuid;
@@ -319,8 +280,6 @@ export class SimpleLootSheet extends ActorSheet {
         //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
-        //log('item', item);
-        //log('itemLootFlags', itemLootFlags);
 
         let claimType = element.closest('.player-claims').dataset.claimType;
 
@@ -334,7 +293,6 @@ export class SimpleLootSheet extends ActorSheet {
         // Fallback to user's assigned character, if they have one.
         if (claimantUuids.length <= 0)
             claimantUuids = game.user.character ? [`Actor.${game.user.character.id}`] : []; // janky way to make it a uuid
-        //log('new choice', claimantUuids);
         if (claimantUuids.length <= 0) {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noClaimantAvailable`));
             return;
@@ -350,7 +308,6 @@ export class SimpleLootSheet extends ActorSheet {
                 ?.claimType == claimType)
             {
                 claimType = 'pass';
-                log('Already have this claim; flipping back to unspent.');
             }
         }
 
@@ -371,10 +328,6 @@ export class SimpleLootSheet extends ActorSheet {
             // Upgrade permissions.  Be sure we never lower them.
             permissions[id] = Math.max(2, permissions[id] ? Number(permissions[id]) : 0);
         }
-        //log('new permissions', permissions);
-        //log('Permissions:', permissions);
-        //log(this);
-        //log('token comparison', this.token, canvas.tokens.controlled[0].document);
         // TODO: Do these updates together.
         await this.token.update({
             overlayEffect: 'icons/svg/chest.svg',
@@ -382,7 +335,6 @@ export class SimpleLootSheet extends ActorSheet {
         await this.token.modifyActorDocument({
             permission: permissions,
         });
-        //log('permissions after application', this.actor.data.permission);
     }
 
     async _onDistributeLootClick(event) {
@@ -395,7 +347,6 @@ export class SimpleLootSheet extends ActorSheet {
 
         const element = event.currentTarget;
         const actor = this.actor;
-        //log(actor);
 
         /* REM
         const uuid = <token>.actor.uuid;
@@ -407,7 +358,6 @@ export class SimpleLootSheet extends ActorSheet {
         */
 
         let itemUpdates = [];
-        //log('items:');
         for (const [lootItemId, lootItem] of this.actor.items.entries()) {
             // Skip items that've already been looted.
             if (lootItem.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) continue;
@@ -441,7 +391,7 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         // Mark any items which were looted.
-        log('itemUpdates from _onDistributeLootClick():', itemUpdates);
+        //log('itemUpdates from _onDistributeLootClick():', itemUpdates);
         await this.actor.updateEmbeddedDocuments('Item', itemUpdates);
     }
 
@@ -466,12 +416,10 @@ export class SimpleLootSheet extends ActorSheet {
         }
 
         const element = event.currentTarget;
-        //log('elements:', element, element.closest('[data-roll-table-uuid]'));
         const tableUuid = $(element.closest('[data-roll-table-uuid]'))?.data('roll-table-uuid');
         const table = await fromUuid(tableUuid);
         if (!table)  {
             ui.notifications.error(game.i18n.localize(`${MODULE_CONFIG.name}.noSuchTable`));
-            //log('Was asked to find a table, but none existed with the given uuid:', tableUuid);
             return;
         }
 
@@ -503,23 +451,8 @@ async function UseBetterTables (token, realTable) {
 
     let drawnItems = [];
     for (let result of table.data.results) {
-        //log('result', result);
         let collection = game.packs.get(result.data.collection);
-        /*
-        let lootItem = (await collection?.getDocument(result.data.resultId))?.clone({
-                data: {
-                    flags: {
-                        [MODULE_CONFIG.name]: {
-                            [MODULE_CONFIG.generatedFromKey]: realTable.uuid,
-                        },
-                    },
-                },
-            },
-            false,
-            {temporary:true});
-        */
         let lootItem = duplicate(await collection?.getDocument(result.data.resultId));
-        //lootItem.data.data.quantity = 500;
         mergeObject(lootItem, {
             data: {
                 /*
@@ -534,30 +467,25 @@ async function UseBetterTables (token, realTable) {
                 },
             },
         });
-        //log('compendium lootItem', lootItem);
         const brtFlags = result.data.flags['better-rolltables'];
-        //log('brtFlags', brtFlags);
         if (brtFlags) {
             const quantityFormula = brtFlags['brt-result-formula']?.formula;
-            //log('formula', quantityFormula);
-            log('are we even trying to get a quantity?', quantityFormula);
-            try {
-                let quantity = (await (new Roll(quantityFormula)).roll({async: true}))?.total;
-                log('quantity', quantity, lootItem.data.quantity);
-                if (quantity) {
-                    mergeObject(lootItem, {
-                        data: {
-                            quantity: Number(lootItem.data.quantity) * Number(quantity),
-                        },
-                    });
-                    //log('new quantity', lootItem.data.data.quantity);
+            if (quantityFormula) {
+                try {
+                    let quantity = (await (new Roll(quantityFormula)).roll({async: true}))?.total;
+                    if (quantity) {
+                        mergeObject(lootItem, {
+                            data: {
+                                quantity: Number(lootItem.data.quantity) * Number(quantity),
+                            },
+                        });
+                    }
                 }
+                catch (e) {console.error(e);}
             }
-            catch (e) {console.error(e);}
         }
         drawnItems.push(lootItem);
     }
-    //log('drawn items', drawnItemsData);
 
     const preExistingItems = token.actor.getEmbeddedCollection('Item');
     const itemUpdates = [];
@@ -567,7 +495,6 @@ async function UseBetterTables (token, realTable) {
     for (const lootItem of drawnItems) {
         // TODO: Consider localization.  Both the word, and the name structure.
         const isBrokenItem = lootItem.name.startsWith('Broken ');
-        //log(lootItemData);
         /*
         // TODO: Don't assume the loot table's contents is a Compendium item.
         // (Thanks to Discord Crymic#9452 for help with compendium/pack access.)
@@ -602,15 +529,18 @@ async function UseBetterTables (token, realTable) {
             }
         }
 
-        // Need to hide the existing, not-broken version if it isn't already.
-        if (lootItem.name.startsWith('Broken')) {
+        // If adding a "Broken" version of an item, hide the unbroken version.
+        // TODO: Maybe do this after all new items are figured out.
+        //       Makes it easier to handle two Broken Longsword items vs.
+        //       one Broken Longsword item with a quantity of 2.
+        //       Either of which should hide two Longsword items.
+        if (lootItem.name.indexOf(game.i18n.localize('loot-claims.broken')) >= 0) {
+            //const nameBroken = game.i18n.format('loot-claims.brokenItemFormat', lootItem.name);
             const actorItemUnbroken = preExistingItems.find(actorItem => {
-                const nameGood = `Broken ${actorItem.name}` == lootItem.name;
-                //log('not-broken search', actorItem.name, lootItem.name, nameGood, actorItem.type, lootItem.type, actorItem.type == lootItem.type);
-                //return actorItem.type == lootItem.type && nameGood;
-                return nameGood; // Don't compare item types.  Broken versions are likely to be loot or something; instead of equipment.
+                const existingItemNameBroken = game.i18n.format('loot-claims.brokenItemFormat', {name:actorItem.name});
+                // Don't compare item types.  Broken versions are likely to be loot or something; instead of equipment.
+                return existingItemNameBroken == lootItem.name;
             });
-            log('unbroken item is', actorItemUnbroken);
             if (actorItemUnbroken && !actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
                 itemUpdates.push({
                     _id: actorItemUnbroken.id,
@@ -626,7 +556,7 @@ async function UseBetterTables (token, realTable) {
 
         // Make a new one if it doesn't exist yet.
         if (!existingItem) {
-            log('making new item from packItem', lootItem, table);
+            //log('making new item from packItem', lootItem, table);
             mergeObject(lootItem, {
                 data: {
                     quantity: Number(lootItem.data.quantity),
@@ -645,7 +575,7 @@ async function UseBetterTables (token, realTable) {
     }
 
     //log('itemUpdates', itemUpdates);
-    log('newItems', newItems);
+    //log('newItems', newItems);
 
     // Update quantities.
     await token.actor.updateEmbeddedDocuments('Item', itemUpdates);

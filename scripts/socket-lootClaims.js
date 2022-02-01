@@ -1,6 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
 import { ClaimantClaim } from './SimpleLootSheet.js';
-import { claimFlagFromUuid } from './module-lootClaims.js';
 import * as util from './util-lootClaims.js';
 const log = util.log;
 
@@ -61,7 +60,6 @@ async function _handleClaimRequest(message, userSenderId) {
     let claimsChanged = false;
     for (let [claimantIndex, claimantUuid] of claimantUuids.entries()) {
         const claimant = await fromUuid(claimantUuid);
-        log('Inspecting claimant', claimantUuid, claimant);
         if (!claimant) {
             conError(`Invalid claimant UUID skipped.  Nothing returned from fromUuid('${claimantUuid}')`);
             continue;
@@ -69,14 +67,12 @@ async function _handleClaimRequest(message, userSenderId) {
         let existingClaimIndex = claims.findIndex(c => c.uuid == claimantUuid);
         if (existingClaimIndex !== undefined && existingClaimIndex != -1) {
             if (claims[existingClaimIndex].claimType == claimType) {
-                log('already match this claim type');
                 continue; // already as requested
             }
             claims[existingClaimIndex].claimType = claimType;
             claimsChanged = true;
         }
         else {
-            log('adding another new claim');
             claims.push(new ClaimantClaim(
                 claimantUuid,
                 claimType,
@@ -86,7 +82,6 @@ async function _handleClaimRequest(message, userSenderId) {
             claimsChanged = true;
         }
     }
-    //log('Updated claims?', claimsChanged, claims);
     if (!claimsChanged) return;
 
     // Unique-ify the list of claims.  No-one gets to claim twice.
@@ -100,5 +95,5 @@ async function _handleClaimRequest(message, userSenderId) {
 
     // Update the item with the new claims.
     await item.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey, claims);
-    log('item claimants set to', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey));
+    //log('item claimants set to', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey));
 }

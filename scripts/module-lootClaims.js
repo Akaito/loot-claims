@@ -57,64 +57,33 @@ export async function reset(actor, {prompt=true} = {}) {
         //log('should attempt reset on', item, item.name, item.data?.flags);
         const ourFlags = item.data?.flags[MODULE_CONFIG.name];
         if (ourFlags) {
-            // TODO: HERE: THIS LOOKS CORRECT.
-            console.log(MODULE_CONFIG.logPrefix, 'generated-from:', ourFlags[MODULE_CONFIG.generatedFromKey]);
             if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
                 toBeDeleted.push(item.id);
-                // TODO: Don't just reset loot like this, but remove it.  Keeping this here for now for quicker testing.
-                //updates.push({'_id': item.id, [`flags.${MODULE_CONFIG.name}`]: null});
             }
             else {
+                // Clear our module's flags from the item to "reset" it.
                 updates.push({_id: item.id, [`flags.${MODULE_CONFIG.name}`]: null});
             }
         }
     }
-    //log('pushing updates', updates);
     await actor.updateEmbeddedDocuments('Item', updates);
     await actor.deleteEmbeddedDocuments('Item', toBeDeleted);
 }
 
+/// We encode because otherwise a uuid, with periods here-and-there in it,
+/// looks like an object when doing document updates.  It turns into a mess.
+///
+/// Tilde (~) is just an arbitrary choice of a character that's hopefully not allowed in UUIDs.
 export function encodeUuidForFlag(uuid) {
     return uuid?.replaceAll('.', '~');
 }
 export function decodeUuidFromFlag(flag) {
-    return flag?.replace('claim~','')?.replaceAll('~','.');
-}
-export function uuidFromClaimFlag(flag) {
-    //log('uuidFromClaimFlag', flag);
-    return decodeUuidFromFlag(flag?.replace('claim~', ''));
-}
-export function claimFlagFromUuid(uuid) {
-    return `claim~${encodeUuidForFlag(uuid)}`;
+    return flag?.replaceAll('~','.');
 }
 
 Hooks.once('init', async function() {
-    log(`${MODULE_CONFIG.name} | init`);
+    log(`init`);
     //libWrapper.register('loot-claims');
-
-    //MODULE_CONFIG.prng = new MersenneTwister(); // Uses timestamp as seed by default.
-
-    // for the server-side
-    // TODO: should this second param be async?
-    /*
-    game.socket.on(MODULE_CONFIG.socket, (request, ack) => {
-        log('SOCKET server got the message');
-        const response = Object.merge(request, {
-            type: 'claimResponse',
-        });
-        //ack(response);
-        //game.socket.broadcast.emit(MODULE_CONFIG.socket, response);
-    });
-    */
-
-    // for all other clients (not the original requester)
-    /*
-    game.socket.on(MODULE_CONFIG.socket, response => {
-        // call the same response handler as the requesting client.
-        // doSomethingWithResponse(response);
-        log('SOCKET uninvolved client got the response');
-    });
-    */
 
     //Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, { makeDefault: false });
     switch (game.system.id) {
@@ -135,7 +104,6 @@ Hooks.once('init', async function() {
 
 Hooks.once('ready', () => {
     log('ready');
-    log('_onClaimClick()');
 
     if (game.user.isGM)
         socket.on(MODULE_CONFIG.socket, handleSocketGm);

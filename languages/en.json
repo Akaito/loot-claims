@@ -12,7 +12,8 @@
     "loot-claims.givePermissions": "Permit Looting",
     "loot-claims.resetLoot": "Reset Loot",
 
-    "myfootest": "hi {arg} - {blarg} bye",
+    "loot-claims.broken": "Broken",
+    "loot-claims.brokenItemFormat": "Broken {name}",
 
     "loot-claims.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
     "loot-claims.confirmResetMessage": "Reset all claimed loot?",
