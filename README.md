@@ -68,7 +68,7 @@ This is currently unused, but could be neat; for showing players where they got 
 ## FAQ
 - **Q:** Can this module be used with lootsheetnpc5e?
   
-  **A:** The two _should_ work all right together, but this is untested.  Personally, lootsheetnpc5e kept breaking tokens on me anytime Foundry updated.  Making them inaccessible even to the GM.  This may have been user error on my part, or issues withing that module itself; uncertain.  So I wrote this hopefully-simpler module to not have to rely on that one.
+  **A:** The two _should_ work all right together, but this is untested.  Personally, lootsheetnpc5e kept breaking actors/tokens on me anytime Foundry updated.  Making them inaccessible even to the GM.  This may have been user error on my part, or issues within that module itself; uncertain.  So I wrote this hopefully-simpler module to not have to rely on that one.
 
 - **Q:** Will systems other than dnd5e be supported?
   
