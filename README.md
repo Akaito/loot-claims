@@ -12,12 +12,14 @@ Instead of players feeling like they have to discuss who gets what before clicki
 If this module's ever breaking anything you can just disable it to see the NPCs as they were.
 Since items are never removed, only flagged.
 
+### How players use it
 From a new Actor sheet, players can make 'will use' or 'can carry' claims for items of any interest.
 All of an actor's loot can then be distributed with a click; rolling who gets how many of each item with claims on it.
 If there are both 'will use' and 'can carry' claims made for an item, the 'can carry' claims are ignored.
 In that case, only the 'will use' claims have opportunity to receive the items.
 If there's multiple of an item, it will be distributed as evenly as possible among all claimants.
 
+### Non-destruction of data, and 'reset' feature
 This module is entirely non-destructive of normal actor/item data, as it works within the space of its own flags as much as possible.
 This module's Actor sheet hides natural weapons, spells, features, etc. to prevent players from seeing/looting them.
 But it doesn't remove those items.
@@ -28,6 +30,7 @@ At any time, loot reset or not, you can switch back to a normal Actor sheet; whi
 Loot can be reset either from the Loot Claims actor sheet, or from a scene navigation context menu to reset them all at once.
 Actors assigned to players are unaffected.
 
+### Loot added from roll tables
 Loot can be added via a roll table sharing its name with any of: the token's name, the token's actor's name, or the original name of the actor when it was imported by MrPrimate's D&D Beyond Importer module.
 So that one-off creature name Xipe, which is mostly just an Oni, can still have match up with a sensical loot table.
 Compendiums are also searched, so there's no need to add the tables to your world.
@@ -36,17 +39,20 @@ Every one of a roll table's results/entries will be added to the actor being loo
 This is how it works for now, because it's the style I want for the simplified way I'm using Anne Gregersen's [Monster Loot](https://www.dmsguild.com/product/275550/Monster-Loot-Vol-1--Monster-Manual) series of books.
 I expect I'll add more options for how roll tables are used later.
 
+#### Partial support of Better Rolltables
 This module is aware of data from the Better Rolltables module, but Loot Claims doesn't use that module's functionality directly.
 None of its API functions provided enough control/information for what I was after, so instead this module just reads and respects the quantity formula set in a Better Rolltable's table's result entries.
 
-Items players loot are flagged with what they were looted from.
-This is currently unused, but could be handy in the future for showing players where they got some of their things.
-
+### System flexibility
 This module's functions are/will be used via the module's global config object.
 So if the module doesn't officially support the system you're playing in, or you just want some part of it to work differently, you can just replace functionality parts of its behavior.
 In the future, this module will support detecting the system it's in and setting the appropriate table of functions.
 Or something-or-other Hooks.
 Have to learn more about those.
+
+### Misc.
+Items players loot are flagged with what they were looted from.
+This is currently unused, but could be neat; for showing players where they got some of their things.
 
 Suggested modules to go with this one:
 - [Better Rolltables](https://foundryvtt.com/packages/better-rolltables/)
@@ -68,8 +74,7 @@ Suggested modules to go with this one:
   
   **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it doing the basic thing I want first.
 
----
-TODO/NEXT:
+## TODO
 - [ ] Currency.  :(
 - [ ] Use libWrapper.
 - [ ] Badge on claimants showing looted quantity.
@@ -86,6 +91,7 @@ TODO/NEXT:
 - [ ] Chat card showing results?
 - [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Implement "Steal"?  Future feature _maybe_.
+
 ---
 
 
