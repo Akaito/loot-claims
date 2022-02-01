@@ -126,6 +126,7 @@ function getClaimantRollsOld(claimantUuids) {
 }
 
 function doClaimantRolls(claimantClaims) {
+    // NOTE: Potential to have weird, non-normal-faced dice with a high enough number of claimants.
     let rollOutcomes = [...Array(Math.max(MODULE_CONFIG.rollMaxValue, claimantClaims.length)).keys()];
     // Outcomes are 0 through 1-less-than-max.
     // Just overwrite invalid zero with the missing max value.
@@ -195,6 +196,7 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
             },
         });
         console.log(MODULE_CONFIG.emoji, 'newItemData', newItemData);
+
         const recipientItem = await Item.create(newItemData, {
             parent,
         });
@@ -423,7 +425,7 @@ export class SimpleLootSheet extends ActorSheet {
             // Skip if no-one wants the item.
             if (claimantIds.length <= 0) continue;
 
-            giveLootTo(this.actor, lootItem, claimantIds);
+            await giveLootTo(this.actor, lootItem, claimantIds);
 
             //await lootItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
             // TODO: Store how much went to who.
