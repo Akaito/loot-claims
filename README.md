@@ -1,7 +1,4 @@
-![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
-<!-- ![](https://img.shields.io/badge/Foundry-v0.8.6-informational) -->
-<!--- Downloads @ Latest Badge -->
-![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
+![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange) ![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->
