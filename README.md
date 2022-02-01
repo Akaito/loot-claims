@@ -72,7 +72,7 @@ This is currently unused, but could be neat; for showing players where they got 
 
 - **Q:** Will systems other than dnd5e be supported?
   
-  **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it doing the basic thing I want first.
+  **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it to do the basic thing I want first.
 
 ## TODO
 - [ ] Currency.  :(
