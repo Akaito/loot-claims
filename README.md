@@ -1,6 +1,6 @@
-![](https://img.shields.io/badge/Foundry-v0.8.6-informational)
+![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
+<!-- ![](https://img.shields.io/badge/Foundry-v0.8.6-informational) -->
 <!--- Downloads @ Latest Badge -->
-<!--- replace <user>/<repo> with your username/repository -->
 ![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
 
 <!--- Forge Bazaar Install % Badge -->
@@ -61,7 +61,7 @@ This is currently unused, but could be neat; for showing players where they got 
 - [Give item to another player](https://foundryvtt.com/packages/give-item/)
   Enables players to send each other items.
   So if they change their mind after loot's been distributed, they can transfer things without the GM's help.
-- [D&D Beyond Importer](https://github.com/MrPrimate/ddb-importer)
+- [D&D Beyond Importer](https://foundryvtt.com/packages/ddb-importer/)
   This module pays attention to the name of actors from when they were originally imported in this way.
   So if you rename one of your Oni tokens to Xipe or some-such, it can still be matched up to its roll table when adding loot to it.
 
