@@ -1,4 +1,9 @@
-![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange) ![GitHub all releases](https://img.shields.io/github/downloads/Akaito/loot-claims/total) ![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
+<!-- Foundry compatibility info. -->
+![Foundry Minimum Core Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Minimum%20Foundry%20Version&query=$.minimumCoreVersion&colorB=orange) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Akaito/loot-claims/main) ![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2FAkaito%2Floot-claims%2Fmain%2Fmodule.json&label=Tested%20With%20Version&query=$.compatibleCoreVersion&colorB=orange) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Akaito/loot-claims/main)
+<!-- Badges to get a rough idea of how many others use this module. -->
+![GitHub all releases](https://img.shields.io/github/downloads/Akaito/loot-claims/total) ![Latest Release Download Count](https://img.shields.io/github/downloads/Akaito/loot-claims/latest/module.zip)
+<!-- Badges that help identify an old, decrepit repo. -->
+![GitHub issues](https://img.shields.io/github/issues/Akaito/loot-claims) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Akaito/loot-claims) ![GitHub forks](https://img.shields.io/github/forks/Akaito/loot-claims?style=social)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->
