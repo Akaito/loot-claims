@@ -43,6 +43,11 @@ I expect I'll add more options for how roll tables are used later.
 This module is aware of data from the Better Rolltables module, but Loot Claims doesn't use that module's functionality directly.
 None of its API functions provided enough control/information for what I was after, so instead this module just reads and respects the quantity formula set in a Better Rolltable's table's result entries.
 
+#### 'Broken' versions of items
+If an item is added from a table that's called, for example, "Broken Shortbow", then an existing item on the character called "Shortbow" will be hidden from the available loot options.
+I'm making use of this with Monster Loot items.
+Unsure if other things do this.
+
 ### System flexibility
 This module's functions are/will be used via the module's global config object.
 So if the module doesn't officially support the system you're playing in, or you just want some part of it to work differently, you can just replace functionality parts of its behavior.
