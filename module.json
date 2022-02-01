@@ -1,7 +1,7 @@
 {
   "name": "loot-claims",
   "title": "Loot Claims",
-  "description": "lootsheetnpc5e kept breaking on me.  Here's an attempt at something simpler.",
+  "description": "Distribute loot more quickly by letting players declare their level of interest, and randomly distributing loot among those claims.  This module does so non-destructively; items are never removed from the defeated NPC.  Just flagged so it looks that way to players.  If this module's ever breaking anything, just disable it and the NPC's items will still be there without changes.",
   "version": "This is auto replaced",
   "library": "false",
   "minimumCoreVersion": "9",

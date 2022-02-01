@@ -7,24 +7,83 @@
 <!--- replace <your-module-name> with the `name` in your manifest -->
 <!--- ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2F<your-module-name>&colorB=4aa94a) -->
 
+Non-destructively distribute loot more quickly by letting players declare their level of interest, and randomly distributing loot among those claims.
+Instead of players feeling like they have to discuss who gets what before clicking a button and taking an item away.
+If this module's ever breaking anything you can just disable it to see the NPCs as they were.
+Since items are never removed, only flagged.
+
+From a new Actor sheet, players can make 'will use' or 'can carry' claims for items of any interest.
+All of an actor's loot can then be distributed with a click; rolling who gets how many of each item with claims on it.
+If there are both 'will use' and 'can carry' claims made for an item, the 'can carry' claims are ignored.
+In that case, only the 'will use' claims have opportunity to receive the items.
+If there's multiple of an item, it will be distributed as evenly as possible among all claimants.
+
+This module is entirely non-destructive of normal actor/item data, as it works within the space of its own flags as much as possible.
+This module's Actor sheet hides natural weapons, spells, features, etc. to prevent players from seeing/looting them.
+But it doesn't remove those items.
+Since the defeated NPC's items aren't removed when looted-- only marked up with flags relevant to Loot Claims-- this module has a 'Reset Loot' feature.
+Resetting loot removes items added via roll tables, and "restores" items looted by players.
+Making re-running the same content for another group of players far easier.
+At any time, loot reset or not, you can switch back to a normal Actor sheet; which will always show the Actor with all its normal things on it regardless of looted state.
+Loot can be reset either from the Loot Claims actor sheet, or from a scene navigation context menu to reset them all at once.
+Actors assigned to players are unaffected.
+
+Loot can be added via a roll table sharing its name with any of: the token's name, the token's actor's name, or the original name of the actor when it was imported by MrPrimate's D&D Beyond Importer module.
+So that one-off creature name Xipe, which is mostly just an Oni, can still have match up with a sensical loot table.
+Compendiums are also searched, so there's no need to add the tables to your world.
+At time of writing, adding from a loot table may not work in the way others want.
+Every one of a roll table's results/entries will be added to the actor being looted; respecting Better Rolltables specified quantity.
+This is how it works for now, because it's the style I want for the simplified way I'm using Anne Gregersen's [Monster Loot](https://www.dmsguild.com/product/275550/Monster-Loot-Vol-1--Monster-Manual) series of books.
+I expect I'll add more options for how roll tables are used later.
+
+This module is aware of data from the Better Rolltables module, but Loot Claims doesn't use that module's functionality directly.
+None of its API functions provided enough control/information for what I was after, so instead this module just reads and respects the quantity formula set in a Better Rolltable's table's result entries.
+
+Items players loot are flagged with what they were looted from.
+This is currently unused, but could be handy in the future for showing players where they got some of their things.
+
+This module's functions are/will be used via the module's global config object.
+So if the module doesn't officially support the system you're playing in, or you just want some part of it to work differently, you can just replace functionality parts of its behavior.
+In the future, this module will support detecting the system it's in and setting the appropriate table of functions.
+Or something-or-other Hooks.
+Have to learn more about those.
+
+Suggested modules to go with this one:
+- [Better Rolltables](https://foundryvtt.com/packages/better-rolltables/)
+  Allows richer data to be set on roll tables.
+  Such as a dice formula for how many of a table's result's item is given.
+- [Give item to another player](https://foundryvtt.com/packages/give-item/)
+  Enables players to send each other items.
+  So if they change their mind after loot's been distributed, they can transfer things without the GM's help.
+- [D&D Beyond Importer](https://github.com/MrPrimate/ddb-importer)
+  This module pays attention to the name of actors from when they were originally imported in this way.
+  So if you rename one of your Oni tokens to Xipe or some-such, it can still be matched up to its roll table when adding loot to it.
+
+## FAQ
+- **Q:** Can this module be used with lootsheetnpc5e?
+  
+  **A:** The two _should_ work all right together, but this is untested.  Personally, lootsheetnpc5e kept breaking tokens on me anytime Foundry updated.  Making them inaccessible even to the GM.  This may have been user error on my part, or issues withing that module itself; uncertain.  So I wrote this hopefully-simpler module to not have to rely on that one.
+
+- **Q:** Will systems other than dnd5e be supported?
+  **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it doing the basic thing I want first.
 
 ---
 TODO/NEXT:
-- [ ] Badge on claimants showing looted quantity.
-- [ ] If multiple owned tokens are controlled, all mark claims (GM convenience thing).
-- [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Currency.  :(
-- [ ] Change module name to 'lootClaims'.
+- [ ] Use libWrapper.
+- [ ] Badge on claimants showing looted quantity.
 - [ ] Test distributing loot from a linked actor.
-- [ ] Use libwrapper.
-- [ ] Have some settings.
-      - [ ] Loot reset confirmation.
-      - [ ] Distribution style (winner gets remainder vs. remainder spread out; latter should be default).
-      - [ ] Option to auto-distribute item once all active players have set their claim?
-            Or marked themselves on the whole sheet as being "ready"?  (Would introduce actor flags.)
 - [ ] Replaceable functions where they're system-specific.
       Set them in MODULE_CONFIG.functions, and call them from there.  Others can replace them.
+      Or use Hooks?
+- [ ] Have some settings.
+      - [ ] Option to auto-distribute item once all active players have set their claim?
+            Or marked themselves on the whole sheet as being "ready"?  (Would introduce actor flags.)
+      - [ ] Auto-add loot from table when... sheet is rendered? (Player could render it first.) Permission is given? (Could be given by means outside of the table.)
+      - [ ] Limit roll table search to specific compendium(s), or the world.
 - [ ] Dialog to pick loot table if multiple look viable.
+- [ ] Chat card showing results?
+- [ ] Resetting loot also resets gained items from looting if the actor is unlinked?
 - [ ] Implement "Steal"?  Future feature _maybe_.
 ---
 
