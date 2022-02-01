@@ -7,6 +7,8 @@
 <!--- replace <your-module-name> with the `name` in your manifest -->
 <!--- ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2F<your-module-name>&colorB=4aa94a) -->
 
+# Loot Claims
+
 Non-destructively distribute loot more quickly by letting players declare their level of interest, and randomly distributing loot among those claims.
 Instead of players feeling like they have to discuss who gets what before clicking a button and taking an item away.
 If this module's ever breaking anything you can just disable it to see the NPCs as they were.
@@ -59,7 +61,7 @@ Have to learn more about those.
 Items players loot are flagged with what they were looted from.
 This is currently unused, but could be neat; for showing players where they got some of their things.
 
-### Suggested modules
+## Suggested modules
 - [Better Rolltables](https://foundryvtt.com/packages/better-rolltables/)
   Allows richer data to be set on roll tables.
   Such as a dice formula for how many of a table's result's item is given.
@@ -69,6 +71,10 @@ This is currently unused, but could be neat; for showing players where they got 
 - [D&D Beyond Importer](https://foundryvtt.com/packages/ddb-importer/)
   This module pays attention to the name of actors from when they were originally imported in this way.
   So if you rename one of your Oni tokens to Xipe or some-such, it can still be matched up to its roll table when adding loot to it.
+
+## Changelog
+
+((Still in early development.))
 
 ## FAQ
 - **Q:** Can this module be used with lootsheetnpc5e?
@@ -157,9 +163,3 @@ When listing a new version, Version should be the version number you set above, 
 
 Clicking "Save" in the bottom right will save the new version, which means that anyone installing your module from within Foundry will get that version, and a post will be generated in the #release-announcements channel on the official Foundry VTT Discord.
 
-
-# FoundryVTT Module
-
-Does something, probably
-
-## Changelog
