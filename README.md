@@ -36,7 +36,7 @@ So that one-off creature name Xipe, which is mostly just an Oni, can still have 
 Compendiums are also searched, so there's no need to add the tables to your world.
 At time of writing, adding from a loot table may not work in the way others want.
 Every one of a roll table's results/entries will be added to the actor being looted; respecting Better Rolltables specified quantity.
-This is how it works for now, because it's the style I want for the simplified way I'm using Anne Gregersen's [Monster Loot](https://www.dmsguild.com/product/275550/Monster-Loot-Vol-1--Monster-Manual) series of books.
+This is how it works for now, because it's the style I want for the simplified way I'm using Anne Gregersen's _[Monster Loot](https://www.dmsguild.com/product/275550/Monster-Loot-Vol-1--Monster-Manual)_ series of books.
 I expect I'll add more options for how roll tables are used later.
 
 #### Partial support of Better Rolltables
