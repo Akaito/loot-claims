@@ -30,14 +30,19 @@ export async function handleSocketGm(message, userSenderId) {
 }
 
 export async function handleSocket(message, senderUserId) {
+    /*
     log('handleSocket() (non-GM)');
     log("IT'S WORKING!");
     log('message', message);
     log('sender user ID', senderUserId);
-    const response = "h'lo";
+    */
     //socket.ack(response);
     //socket.broadcast.emit(MODULE_CONFIG.socket, response);
-    socket.emit(MODULE_CONFIG.socket, response);
+
+    // Having this here caused an infinite run of messages back-and-forth when
+    // more than one user was connected.  They kept taking turns sending "h'lo".
+    //const response = "h'lo";
+    //socket.emit(MODULE_CONFIG.socket, response);
 }
 
 
