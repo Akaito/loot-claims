@@ -1,5 +1,5 @@
 import { reset } from './module-lootClaims.js';
-import { findLootTable } from './SimpleLootSheet.js';
+import { findLootTable } from './ActorSheet_dnd5e.js';
 import { changeSheet } from './util-lootClaims.js';
 
 export const MODULE_CONFIG = {

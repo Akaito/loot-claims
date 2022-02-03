@@ -25,7 +25,7 @@
     "/scripts/util-lootClaims.js",
     "/scripts/module-lootClaims.js",
     "/scripts/socket-lootClaims.js",
-    "/scripts/SimpleLootSheet-lootClaims.js"
+    "/scripts/ActorSheet_dnd5e.js"
   ],
   "scripts": [
     "/scripts/lib/lib.js"

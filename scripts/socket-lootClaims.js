@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
-import { ClaimantClaim } from './SimpleLootSheet.js';
+import { ClaimantClaim } from './ActorSheet_dnd5e.js';
 import * as util from './util-lootClaims.js';
 const log = util.log;
 

@@ -1,10 +1,11 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
-import { ActorSheet_dnd5e as ActorSheet_dnd5e } from './SimpleLootSheet.js';
+import { ActorSheet_dnd5e } from './ActorSheet_dnd5e.js';
 import { handleSocket, handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
 const log = util.log; // still want this short, convenient name
 
-/// Try using this like `SimpleLootSheet.reset(canvas.scene.tokens)` to reset everything in a scene.
+/// Try using this like `LootClaims.reset(canvas.scene.tokens)` to reset everything in a scene.
+/// (Other than linked actors.)
 ///
 /// target: Actor, Token, or Item.
 export async function reset(actor, {prompt=true} = {}) {
@@ -85,13 +86,12 @@ Hooks.once('init', async function() {
     log(`init`);
     //libWrapper.register('loot-claims');
 
-    //Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, { makeDefault: false });
     switch (game.system.id) {
         // Add more system IDs here if the sheet is compatible with them.
         // Or add another case-break chunk to use a different sheet.
         case 'dnd5e': {
             Actors.registerSheet(MODULE_CONFIG.name, ActorSheet_dnd5e, {
-                label: 'loot-claims.sheetName',
+                label: 'loot-claims.sheetName', // localized for token config drop-down
                 makeDefault: false,
             });
             break;

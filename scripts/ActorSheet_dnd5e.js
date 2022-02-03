@@ -49,6 +49,7 @@ async function makeClaim(claimantUuids, claimType, itemUuid) {
     }
 }
 
+// TODO: Move to a non-system-specific file.
 export async function findLootTable(actor) {
     actor = actor?.actor || actor; // Change token to actor if needed.
     if (!actor) return undefined;

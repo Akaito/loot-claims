@@ -48,8 +48,9 @@ export function floc(message, ...args) {
 }
 
 function _consolePrint(printFunc, message, ...args) {
-    let caller_info = (new Error).stack.split('\n');
-    console.log(caller_info);
+    // TODO: Can we somehow get Firefox's console's right-side link to point where we want?
+    //let caller_info = (new Error).stack.split('\n');
+    //console.log(caller_info);
     let result = floc(message, ...args);
     printFunc(MODULE_CONFIG.emoji, MODULE_CONFIG.name, '|', ...result);
 }
@@ -70,9 +71,7 @@ export function log(message, ...args) {
     _consolePrint(console.log, message, ...args);
 }
 
-export async function changeSheet(tokens, newSheet=`${MODULE_CONFIG.name}.SimpleLootSheet`) {
-    let tokens = canvas.tokens.controlled;
-    let newSheet = `${MODULE_CONFIG.name}.${newSheet}`;
+export async function changeSheet(tokens=canvas.tokens.controlled, newSheet=`${MODULE_CONFIG.name}.ActorSheet_dnd5e`) {
     for (let token of tokens) {
         let priorState = token.actor?.sheet?._state;
         let priorPosition = token.actor?.sheet?.position;
