@@ -183,7 +183,7 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
     //await sourceItem.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey, claimantClaims[0].uuid);
 }
 
-export class SimpleLootSheet extends ActorSheet {
+export class ActorSheet_dnd5e extends ActorSheet {
 
     static get defaultOptions() {
         return mergeObject(super.defaultOptions, {

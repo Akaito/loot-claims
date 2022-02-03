@@ -1,5 +1,6 @@
 import { reset } from './module-lootClaims.js';
 import { findLootTable } from './SimpleLootSheet.js';
+import { changeSheet } from './util-lootClaims.js';
 
 export const MODULE_CONFIG = {
     name: 'loot-claims',
@@ -13,6 +14,7 @@ export const MODULE_CONFIG = {
     excludedItemTypes: ['class', 'spell', 'feat'],
 
     functions: {
+        changeSheet,
         findLootTable,
         reset,
     },

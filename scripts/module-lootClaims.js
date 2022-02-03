@@ -1,5 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
-import { SimpleLootSheet } from './SimpleLootSheet.js';
+import { ActorSheet_dnd5e as ActorSheet_dnd5e } from './SimpleLootSheet.js';
 import { handleSocket, handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
 const log = util.log; // still want this short, convenient name
@@ -90,13 +90,27 @@ Hooks.once('init', async function() {
         // Add more system IDs here if the sheet is compatible with them.
         // Or add another case-break chunk to use a different sheet.
         case 'dnd5e': {
-            Actors.registerSheet(MODULE_CONFIG.name, SimpleLootSheet, {
+            Actors.registerSheet(MODULE_CONFIG.name, ActorSheet_dnd5e, {
                 label: 'loot-claims.sheetName',
                 makeDefault: false,
             });
             break;
         }
     }
+
+    // TODO: Settings registration.
+    /*
+    game.settings.register(MODULE_CONFIG.name, 'foo', {
+        name: 'Foo',
+        scope: 'world',
+        default: {},
+        type: Object,
+        config: false,
+        onChange: foo => {
+            game.foo = foo;
+        },
+    });
+    */
 
     preloadHandlebarsTemplates();
     log('init done');
@@ -110,7 +124,7 @@ Hooks.once('ready', () => {
     else
         socket.on(MODULE_CONFIG.socket, handleSocket);
 
-    window.SimpleLootSheet = MODULE_CONFIG.functions;
+    window.LootClaims = MODULE_CONFIG.functions;
 
     // Just testing our format/localize helper.
     //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));

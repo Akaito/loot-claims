@@ -48,6 +48,8 @@ export function floc(message, ...args) {
 }
 
 function _consolePrint(printFunc, message, ...args) {
+    let caller_info = (new Error).stack.split('\n');
+    console.log(caller_info);
     let result = floc(message, ...args);
     printFunc(MODULE_CONFIG.emoji, MODULE_CONFIG.name, '|', ...result);
 }
@@ -66,4 +68,35 @@ export function uiError(message, ...args) {
 
 export function log(message, ...args) {
     _consolePrint(console.log, message, ...args);
+}
+
+export async function changeSheet(tokens, newSheet=`${MODULE_CONFIG.name}.SimpleLootSheet`) {
+    let tokens = canvas.tokens.controlled;
+    let newSheet = `${MODULE_CONFIG.name}.${newSheet}`;
+    for (let token of tokens) {
+        let priorState = token.actor?.sheet?._state;
+        let priorPosition = token.actor?.sheet?.position;
+        let promises = [];
+        for (let app of Object.values(token.actor.apps)) {
+            promises.push(app.close());
+        }
+        await Promise.all(promises);
+
+        token.actor.apps = {};
+        token.actor._sheet = null;
+        await token.actor.setFlag('core', 'sheetClass', newSheet);
+
+        // Re-open sheets which already were.
+        if (priorState > 0) {
+            if (priorPosition) {
+                token.actor.sheet.render(true, {
+                    left: priorPosition.left,
+                    top: priorPosition.top
+                });
+            }
+            else {
+                token.actor.sheet.render(true);
+            }
+        }
+    }
 }
