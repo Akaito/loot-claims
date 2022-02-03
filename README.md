@@ -79,7 +79,7 @@ This is currently unused, but could be neat; for showing players where they got 
 ## FAQ
 - **Q:** Can this module be used with lootsheetnpc5e?
   
-  **A:** The two _should_ work all right together, but this is untested.  Personally, lootsheetnpc5e kept breaking actors/tokens on me anytime Foundry updated.  Making them inaccessible by either making the sheet un-renderable, or destroying currency data when its layout changed.  This may have been user error on my part, or issues within that module itself, and was most likely some combination of the two.  So, in any case, I wrote this hopefully-simpler module to not have to rely on that one.  And not risk breaking data as much as I can reasonably avoid it.
+  **A:** The two _should_ work all right together, but this is untested.  Be aware that looting from a lootsheetnpc5e removes the item(s).  Whereas lootfrom via Loot Claims _doesn't_ remove the items.  So switching from Loot Claims to lootsheetnpc5e can allow looting the same things twice.
 
 - **Q:** Will systems other than dnd5e be supported?
   
