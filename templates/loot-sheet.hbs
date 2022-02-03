@@ -20,6 +20,17 @@
     </div>
     {{/if}}
 
+    {{#if currency}}
+    <div class="currency-list">
+        <i class="fas fa-coins"></i>
+        {{#each currency as |quantity name|}}
+        {{#if (gt quantity 0)}}
+        <span data-name="{{name}}" data-quantity="{{quantity}}">{{quantity}}{{name}}</span>
+        {{/if}}
+        {{/each}}
+    </div>
+    {{/if}}
+
     <table class="loot-claims-table items-list item-list inventory-list {{css}}">
         <tr>
             <th>{{localize 'loot-claims.item'}}</th>
@@ -33,7 +44,7 @@
             <tr class="item {{#if lootedBy}}looted{{/if}}" data-item-uuid="{{uuid}}">
                 <td class="item-brief">
                     <!-- <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div> -->
-                        <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>
+                    <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>
                     <div class="item-name">
                         {{~name~}}
                         {{~#if quantity~}}&nbsp;({{~quantity~}}){{~/if~}}

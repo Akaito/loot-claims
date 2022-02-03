@@ -218,6 +218,11 @@ export class ActorSheet_dnd5e extends ActorSheet {
         data.isGM = game.user.isGM;
         //data.iamResponsibleGm = iamResponsibleGM(); // Storing this in this way causes the result to be false somehow.
 
+        if (Object.values(this.actor.data?.data?.currency).reduce((a,b) => a+b) > 0)
+            data.currency = this.actor.data.data.currency;
+        else
+            data.currency = null;
+
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
         for (let item of this.actor.items) {
