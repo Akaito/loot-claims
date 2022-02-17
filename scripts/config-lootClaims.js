@@ -53,6 +53,9 @@ export const MODULE_CONFIG = {
     //greedKey: 'greed',
     //passKey: 'pass',
 
+    currencyLootedKey: 'currency-looted',
+    currencyPseudoItemsKey: 'currency-pseudo-items',
+    currencyClaimsKey: 'currency-claims',
     lootedByKey: 'lootedBy',
     lootedFromKey: 'looted-from-uuid',
     lootedFromNameKey: 'looted-from-name',

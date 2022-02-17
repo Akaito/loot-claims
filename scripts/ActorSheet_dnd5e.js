@@ -215,13 +215,9 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
         data.lootTable = await findLootTable(this);
 
+        // TODO: Maybe use more unique names to avoid possible future conflicts from Foundry.
         data.isGM = game.user.isGM;
         //data.iamResponsibleGm = iamResponsibleGM(); // Storing this in this way causes the result to be false somehow.
-
-        if (Object.values(this.actor.data?.data?.currency).reduce((a,b) => a+b) > 0)
-            data.currency = this.actor.data.data.currency;
-        else
-            data.currency = null;
 
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
@@ -271,6 +267,50 @@ export class ActorSheet_dnd5e extends ActorSheet {
                 }
             }
         }
+
+        // deprecating
+        if (Object.values(this.actor.data?.data?.currency).reduce((a,b) => a+b) > 0)
+            data.currency = this.actor.data.data.currency;
+        else
+            data.currency = null;
+
+        // new, fake items way
+        const currency = this.actor.data?.data?.currency ?? {}; // dnd5e
+        data.currencyItems = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) ?? {};
+        for (let [name,quantity] of Object.entries(currency)) {
+            if (data.currencyItems[name]) continue;
+            mergeObject(data.currencyItems, {
+                name,
+                quantity,
+                icon: '<i class="fas fa-coins"></i>',
+                //...MODULE_CONFIG.claimTypes.map(t => ({[t]: []})),
+                // TODO: Don't hard-code the claim types.
+                need: [], geed: [], pass: [],
+            });
+        }
+
+        data.currencyClaims = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
+        if (!data.currencyPseudoItems) data.currencyPseudoItems = [];
+        for (let [name,quantity] of (Object.entries(currency))) {
+            if (Object.keys(data.currencyClaims)?.length > 0 && data.currencyClaims.find(cpi => cpi.name == name)) continue;
+            data.currencyPseudoItems.push({
+                name,
+                quantity,
+                icon: '<i class="fas fa-coins"></i>',
+                claims: [],
+            });
+        }
+
+        data.currencyPseudoItems = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) || [];
+        for (let [name,quantity] of (Object.entries(currency))) { // dnd5e
+            if (data.currencyPseudoItems.find(cpi => cpi.name == name)) continue;
+            data.currencyPseudoItems.push({
+                name,
+                quantity,
+                icon: '<i class="fas fa-coins"></i>',
+            });
+        }
+        //data.currencyClaims = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
 
         //log('--- END getData()');
         //log('CLAIMS laid out for hbs', data.claims);
