@@ -161,6 +161,27 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
             continue;
         }
 
+        // Consider a pre-existing item on the actor to be the same as this new
+        // loot item if its type and name match.  Imperfect, but might be the most
+        // sane means without being _too_ restrictive.
+        const existingItem = parent.items.find(actorItem => actorItem.type == newItemData.type && actorItem.name == newItemData.name);
+        // If the actor already has the item, just increase its quantity.
+        if (existingItem) {
+            // Not gaining a Broken version of an existing item: just increase existing quantity.
+            //if (!actorItemUnbroken || actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
+            if (existingItem) {
+                // TODO: Do this all at once; not in separate calls like this.
+                await parent.updateEmbeddedDocuments('Item', [{
+                    _id: existingItem.id,
+                    id: existingItem.id,
+                    data: {
+                        quantity: Number(existingItem.data.data.quantity) + quantityEvenlySharable + (gettingSomeRemainder ? 1 : 0),
+                    },
+                }]);
+                continue;
+            }
+        }
+        
         mergeObject(newItemData, {
             data: {
                 quantity: quantityEvenlySharable + (gettingSomeRemainder ? 1 : 0), // dnd5e
