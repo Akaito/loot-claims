@@ -35,6 +35,15 @@
   "styles": [
     "/styles/module.css"
   ],
+  "packs": [
+    {
+      "name": "currency-dnd5e",
+      "label": "Currency",
+      "system": "dnd5e",
+      "path": "./packs/currency-dnd5e.db",
+      "entity": "Item"
+    }
+  ],
   "languages": [
     {
       "lang": "en",
