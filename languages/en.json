@@ -17,9 +17,11 @@
 
     "loot-claims.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
     "loot-claims.confirmResetMessage": "Reset all claimed loot?",
+    "loot-claims.invalidTable": "Invalid or missing table.",
     "loot-claims.noClaimantAvailable": "To claim loot, you must have a token you own selected.  Or have an assigned character.",
     "loot-claims.noSuchTable": "No such table was found.  See the console for details.",
     "loot-claims.noneFound": "None Found",
     "loot-claims.noTable": "No Table",
-    "loot-claims.responsibleGmOnly": "Only the arbitrarily-chosen responsible GM can distribute loot."
+    "loot-claims.responsibleGmOnly": "Only the arbitrarily-chosen responsible GM can distribute loot.",
+    "loot-claims.someTablesMissing": "Some desired loot tables weren't found.  See the console for which ones."
 }

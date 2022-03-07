@@ -87,6 +87,7 @@ This is currently unused, but could be neat; for showing players where they got 
 
 ## TODO
 - [ ] Currency.  :(
+- [ ] Bug: If a loot table adds an item that already exists, it increases its quantity.  Reset Loot doesn't restore the quantity to what it originally was.
 - [ ] Use libWrapper.
 - [ ] Badge on claimants showing looted quantity.
 - [ ] Test distributing loot from a linked actor.

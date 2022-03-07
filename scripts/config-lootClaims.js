@@ -1,13 +1,13 @@
 import { reset } from './module-lootClaims.js';
-import { findLootTable } from './ActorSheet_dnd5e.js';
 import { changeSheet } from './util-lootClaims.js';
+import { addLoot, findLootTable, addLootTable } from './lootTables-lootClaims.js';
 
 export const MODULE_CONFIG = {
     name: 'loot-claims',
     title: 'Loot Claims',
     socket: 'module.loot-claims',
 
-    // Used to prefix logs so we can spot ours easily.
+    // Sometimes used to prefix logs so we can spot ours easily.
     emoji: '\u{1F4B0}',
     logPrefix:  '\u{1F4B0} loot-claims | ',
 
@@ -15,11 +15,27 @@ export const MODULE_CONFIG = {
 
     functions: {
         changeSheet,
+
+        /// Takes an array of tokens.
+        ///
+        /// Will attempt to discover loot tables which match the token/actor by
+        /// name.  Including the original name from D&D Beyond if it was
+        /// imported via Mr. Primate's module.
+        addLoot,
+
+        /// Takes a token, and a single loot table to use for all the tokens.
+        addLootTable,
+        
+        /// Takes one arg: an actor or token.
+        ///
+        /// You probably won't need to use this directly.  It's intended as a
+        /// way to step in and take over the way Loot Claims finds a table.
+        /// Replacing that process with your own.
         findLootTable,
+
+        /// Revert changes made by loot-claims.
         reset,
     },
-
-    //prng: null, // Becomes a Foundry MersenneTwister during module init.
 
     messageTypes: {
         CLAIM_REQUEST: 'claim-request',

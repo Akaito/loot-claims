@@ -86,6 +86,8 @@ Hooks.once('init', async function() {
     log(`init`);
     //libWrapper.register('loot-claims');
 
+    window.LootClaims = MODULE_CONFIG.functions;
+
     switch (game.system.id) {
         // Add more system IDs here if the sheet is compatible with them.
         // Or add another case-break chunk to use a different sheet.
@@ -123,8 +125,6 @@ Hooks.once('ready', () => {
         socket.on(MODULE_CONFIG.socket, handleSocketGm);
     else
         socket.on(MODULE_CONFIG.socket, handleSocket);
-
-    window.LootClaims = MODULE_CONFIG.functions;
 
     // Just testing our format/localize helper.
     //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));

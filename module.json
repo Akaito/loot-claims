@@ -5,10 +5,10 @@
   "version": "This is auto replaced",
   "library": "false",
   "minimumCoreVersion": "9",
-  "compatibleCoreVersion": "9.249",
+  "compatibleCoreVersion": "9.255",
   "authors": [
     {
-      "name": "tas"
+      "name": "Akaito"
     }
   ],
   "socket": true,
@@ -25,6 +25,7 @@
     "/scripts/util-lootClaims.js",
     "/scripts/module-lootClaims.js",
     "/scripts/socket-lootClaims.js",
+    "/scripts/lootTables-lootClaims.js",
     "/scripts/ActorSheet_dnd5e.js"
   ],
   "scripts": [
