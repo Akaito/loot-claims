@@ -3,16 +3,16 @@ import { encodeUuidForFlag } from './module-lootClaims.js';
 
 export async function addLoot(tokens) {
     let memoizedTables = new Map;
-    let noTables = [];
+    let missingTables = [];
     for (let token of tokens) {
         //actor = actor?.actor || actor; // Change token to actor if needed.
         const namePair = token.name + ':' + token.actor.name;
-        if (noTables.includes(namePair)) continue;
+        if (missingTables.includes(namePair)) continue;
 
         let table = memoizedTables[namePair];
         if (!table) table = await findLootTable(token);
         if (!table) {
-            noTables.push(namePair);
+            missingTables.push(namePair);
             continue;
         }
 
@@ -22,12 +22,10 @@ export async function addLoot(tokens) {
         );
     }
 
-    await MODULE_CONFIG.functions.addCurrencyItems(tokens);
-
-    if (noTables.length > 0) {
+    if (missingTables.length > 0) {
         const warnMsg = game.i18n.localize(`${MODULE_CONFIG.name}.someTablesMissing`);
         ui.notifications.warn(warnMsg);
-        console.log(warnMsg, '\nLoot Claims found no tables matching these token:actor names:', noTables);
+        console.log(warnMsg, '\nLoot Claims found no tables matching these token:actor names:', missingTables);
     }
 }
 
