@@ -338,25 +338,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
     async _onGivePermissionsClick(event) {
         event.preventDefault();
-        let activePlayers = game.users.filter(user => !user.isGM && user.active);
-        if (activePlayers.length <= 0) return;
-        let activePlayerIds = activePlayers.map(u=>u.id);
-
-        // Upgrade player permissions to Observer so they can see/use the sheet.
-        // TODO: Try out Limited.
-        let permissions = {};
-        Object.assign(permissions, this.token.actor.data.permission);
-        for (let id of activePlayerIds) {
-            // Upgrade permissions.  Be sure we never lower them.
-            permissions[id] = Math.max(2, permissions[id] ? Number(permissions[id]) : 0);
-        }
-        // TODO: Do these updates together.
-        await this.token.update({
-            overlayEffect: 'icons/svg/chest.svg',
-        });
-        await this.token.modifyActorDocument({
-            permission: permissions,
-        });
+        MODULE_CONFIG.functions.givePermission([this.token]);
     }
 
     async _onDistributeLootClick(event) {

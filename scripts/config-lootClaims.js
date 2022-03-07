@@ -1,6 +1,7 @@
 import { reset } from './module-lootClaims.js';
 import { changeSheet } from './util-lootClaims.js';
 import { addLoot, findLootTable, addLootTable } from './lootTables-lootClaims.js';
+import { givePermission } from './lootTaking-lootClaims.js';
 
 export const MODULE_CONFIG = {
     name: 'loot-claims',
@@ -25,6 +26,8 @@ export const MODULE_CONFIG = {
 
         /// Takes a token, and a single loot table to use for all the tokens.
         addLootTable,
+
+        givePermission,
         
         /// Takes one arg: an actor or token.
         ///
