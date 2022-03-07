@@ -22,7 +22,7 @@
 
     {{#if currency}}
     <div class="currency-list">
-        <i class="fas fa-coins"></i>
+        <a class="add-currency-items">{{localize 'loot-claims.addCurrencyItems'}} <i class="fas fa-coins"></i></a>
         {{#each currency as |quantity name|}}
         {{#if (gt quantity 0)}}
         <span data-name="{{name}}" data-quantity="{{quantity}}">{{quantity}}{{name}}</span>

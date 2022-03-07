@@ -15,6 +15,7 @@
     "loot-claims.broken": "Broken",
     "loot-claims.brokenItemFormat": "Broken {name}",
 
+    "loot-claims.addCurrencyItems": "Add Currency Items",
     "loot-claims.currency-cp": "Copper (cp)",
     "loot-claims.currency-sp": "Silver (sp)",
     "loot-claims.currency-ep": "Electrum (ep)",

@@ -83,6 +83,7 @@ export async function addCurrencyItems(tokens) {
 
         console.log(itemUpdates);
         console.log(newItems);
+        await token.actor.updateEmbeddedDocuments('Item', itemUpdates);
         await Item.createDocuments(newItems, {
             parent: token.actor,
         });

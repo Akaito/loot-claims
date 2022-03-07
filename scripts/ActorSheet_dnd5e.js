@@ -178,6 +178,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
         html.find('.player-claims').click(this._onClaimClick.bind(this));
         html.find('.reset-loot').click(this._onResetLootClick.bind(this));
         html.find('.add-loot-table').click(this._onAddLootTableClick.bind(this));
+        html.find('.add-currency-items').click(this._onAddCurrencyItems.bind(this));
         html.find('.give-permissions').click(this._onGivePermissionsClick.bind(this));
         html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
 
@@ -338,7 +339,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
     async _onGivePermissionsClick(event) {
         event.preventDefault();
-        MODULE_CONFIG.functions.givePermission([this.token]);
+        await MODULE_CONFIG.functions.givePermission([this.token]);
     }
 
     async _onDistributeLootClick(event) {
@@ -409,10 +410,11 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
         const actor = this.actor;
 
-        MODULE_CONFIG.functions.reset(actor);
+        await MODULE_CONFIG.functions.reset(actor);
     }
 
     async _onAddLootTableClick(event) {
+        event.preventDefault();
         if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
         if (!iamResponsibleGM()) {
             ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
@@ -427,6 +429,17 @@ export class ActorSheet_dnd5e extends ActorSheet {
             return;
         }
 
-        MODULE_CONFIG.functions.addLootTable([this.token], table);
+        await MODULE_CONFIG.functions.addLootTable([this.token], table);
+    }
+
+    async _onAddCurrencyItems(event) {
+        event.preventDefault();
+        if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+        if (!iamResponsibleGM()) {
+            ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
+            return;
+        }
+
+        await MODULE_CONFIG.functions.addCurrencyItems([this.token]);
     }
 }
