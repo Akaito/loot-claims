@@ -41,7 +41,7 @@
 
         <!-- {each currencyClaims -->
 
-        {{log 'sheet render | about to each-claims. we are:'}}{{log .}}
+        <!-- {log 'sheet render | about to each-claims. we are:'}{log .} -->
         {{#each claims }}
             <tr class="item {{#if lootedBy}}looted{{/if}}" data-item-uuid="{{uuid}}">
                 <td class="item-brief">

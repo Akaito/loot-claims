@@ -22,6 +22,8 @@ export async function addLoot(tokens) {
         );
     }
 
+    await MODULE_CONFIG.functions.addCurrencyItems(tokens);
+
     if (noTables.length > 0) {
         const warnMsg = game.i18n.localize(`${MODULE_CONFIG.name}.someTablesMissing`);
         ui.notifications.warn(warnMsg);
@@ -176,10 +178,11 @@ async function UseBetterTables (token, realTable) {
         if (existingItem) {
             // Not gaining a Broken version of an existing item: just increase existing quantity.
             //if (!actorItemUnbroken || actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
+            // TODO: Clean this area up.
             if (existingItem) {
                 itemUpdates.push({
                     _id: existingItem.id,
-                    id: existingItem.id,
+                    //id: existingItem.id,
                     data: {
                         quantity: Number(existingItem.data.data.quantity) + Number(lootItem.data.quantity),
                     },
@@ -202,7 +205,7 @@ async function UseBetterTables (token, realTable) {
             if (actorItemUnbroken && !actorItemUnbroken.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) {
                 itemUpdates.push({
                     _id: actorItemUnbroken.id,
-                    id: actorItemUnbroken.id,
+                    //id: actorItemUnbroken.id,
                     flags: {
                         [MODULE_CONFIG.name]: {
                             [MODULE_CONFIG.hiddenKey]: 'broken', // TODO: Use some thought-out value.
@@ -222,7 +225,7 @@ async function UseBetterTables (token, realTable) {
                 flags: {
                     [MODULE_CONFIG.name]: {
                         //'source-item': encodeUuidForFlag(lootItemData.uuid),
-                        'generated-from': encodeUuidForFlag(table.uuid),
+                        [MODULE_CONFIG.generatedFromKey]: encodeUuidForFlag(table.uuid),
                     },
                 },
             });

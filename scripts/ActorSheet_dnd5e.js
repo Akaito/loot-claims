@@ -128,7 +128,7 @@ async function giveLootTo(sourceActor, sourceItem, claimantClaims) {
                 // TODO: Do this all at once; not in separate calls like this.
                 await parent.updateEmbeddedDocuments('Item', [{
                     _id: existingItem.id,
-                    id: existingItem.id,
+                    //id: existingItem.id,
                     data: {
                         quantity: Number(existingItem.data.data.quantity) + quantityEvenlySharable + (gettingSomeRemainder ? 1 : 0),
                     },

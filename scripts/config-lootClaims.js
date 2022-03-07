@@ -2,6 +2,7 @@ import { reset } from './module-lootClaims.js';
 import { changeSheet } from './util-lootClaims.js';
 import { addLoot, findLootTable, addLootTable } from './lootTables-lootClaims.js';
 import { givePermission } from './lootTaking-lootClaims.js';
+import { addCurrencyItems, findCurrencyItem } from './currency-lootClaims.js';
 
 export const MODULE_CONFIG = {
     name: 'loot-claims',
@@ -13,6 +14,9 @@ export const MODULE_CONFIG = {
     logPrefix:  '\u{1F4B0} loot-claims | ',
 
     excludedItemTypes: ['class', 'spell', 'feat'],
+
+    /// Gets filled out as currencies are looked up.
+    memoizedCurrencies: {},
 
     functions: {
         changeSheet,
@@ -35,6 +39,18 @@ export const MODULE_CONFIG = {
         /// way to step in and take over the way Loot Claims finds a table.
         /// Replacing that process with your own.
         findLootTable,
+
+        /// Ignorable unless you want to change the currency mapping for your system/world.
+        ///
+        /// Takes currency abbreviation, like dnd5e's "gp" or "cp".
+        /// Returns an Item (Item5e in dnd5e).
+        findCurrencyItem,
+
+        /// Add currency items equivalent to the currency object's fields.
+        ///
+        /// Note this will _NOT_ remove the existing currency!  It just adds
+        /// items to represent it for easier looting with Loot Claims.
+        addCurrencyItems,
 
         /// Revert changes made by loot-claims.
         reset,
