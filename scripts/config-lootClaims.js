@@ -1,7 +1,7 @@
 import { reset } from './module-lootClaims.js';
 import { changeSheet } from './util-lootClaims.js';
 import { addLoot, findLootTable, addLootTable } from './lootTables-lootClaims.js';
-import { givePermission } from './lootTaking-lootClaims.js';
+import { distributeLoot, givePermission } from './lootTaking-lootClaims.js';
 import { addCurrencyItems, findCurrencyItem } from './currency-lootClaims.js';
 
 export const MODULE_CONFIG = {
@@ -51,6 +51,11 @@ export const MODULE_CONFIG = {
         /// Note this will _NOT_ remove the existing currency!  It just adds
         /// items to represent it for easier looting with Loot Claims.
         addCurrencyItems,
+
+        /// Just takes an array of tokens or actors (or a single one).  Ignores
+        /// any items on it which were already looted via loot-claims, or don't
+        /// have any claims on them.
+        distributeLoot,
 
         /// Revert changes made by loot-claims.
         reset,

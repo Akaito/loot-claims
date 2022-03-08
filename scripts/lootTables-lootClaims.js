@@ -1,4 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
+import { iamResponsibleGM } from './socket-lootClaims.js';
 import { encodeUuidForFlag } from './module-lootClaims.js';
 import { getNewCurrencyDocuments } from './currency-lootClaims.js';
 
@@ -79,6 +80,12 @@ export async function findLootTable(actor, {ignorePlayerTokens=true}={}) {
 }
 
 export async function addLootTable(tokens, lootTable, {ignorePlayerTokens=true}={}) {
+    if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+    if (!iamResponsibleGM()) {
+        ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
+        return;
+    }
+
     if (ignorePlayerTokens)
         tokens = tokens.filter(t => t.actor.type != 'pc');
 

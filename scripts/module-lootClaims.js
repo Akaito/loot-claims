@@ -1,4 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
+import { iamResponsibleGM } from './socket-lootClaims.js';
 import { ActorSheet_dnd5e } from './ActorSheet_dnd5e.js';
 import { handleSocket, handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
@@ -9,6 +10,12 @@ const log = util.log; // still want this short, convenient name
 ///
 /// target: Actor, Token, or Item.
 export async function reset(actor, {prompt=true, ignorePlayerTokens=true}={}) {
+    if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+    if (!iamResponsibleGM()) {
+        ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
+        return;
+    }
+
     if (ignorePlayerTokens && actor.type == 'pc') return;
 
     if (prompt === true) {

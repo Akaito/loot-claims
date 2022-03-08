@@ -1,5 +1,6 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
 import { encodeUuidForFlag } from './module-lootClaims.js';
+import { iamResponsibleGM } from './socket-lootClaims.js';
 
 /// Deliberately doesn't cache/memoize its found items.  So someone can try
 /// things out, then realize they want to import or otherwise make their own
@@ -101,7 +102,20 @@ export async function getNewCurrencyDocuments(tokens) {
 
 /// Just adds items equivalent to data.data.currency object values.
 /// Does not remove existing real currency!
-export async function addCurrencyItems({tokens=canvas.tokens.controlled, ignorePlayerTokens=true}={}) {
+/// @param {[Token5e]} [tokens=canvas.tokens.controlled]
+/// @param {Boolean} [ignorePlayerTokens=true]
+export async function addCurrencyItems(
+    /** @type {[Token5e]} */ tokens=canvas.tokens.controlled,
+    {
+        ignorePlayerTokens=true
+    }={}
+) {
+    if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+    if (!iamResponsibleGM()) {
+        ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
+        return;
+    }
+
     if (ignorePlayerTokens)
         tokens = tokens.filter(t => t.actor.type != 'pc');
 
