@@ -101,7 +101,10 @@ export async function getNewCurrencyDocuments(tokens) {
 
 /// Just adds items equivalent to data.data.currency object values.
 /// Does not remove existing real currency!
-export async function addCurrencyItems(tokens) {
+export async function addCurrencyItems({tokens=canvas.tokens.controlled, ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens)
+        tokens = tokens.filter(t => t.actor.type != 'pc');
+
     let docs = await getNewCurrencyDocuments(tokens);
     //console.log('currency docs for multiple tokens', docs);
 

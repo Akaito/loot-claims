@@ -1,10 +1,8 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
 
-export async function givePermission(tokens=undefined, players=undefined) {
-    // Default to controlled tokens.
-    if (!tokens) {
-        tokens = canvas.tokens.controlled;
-    }
+export async function givePermission({tokens=canvas.tokens.controlled, players=undefined, ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens)
+        tokens = tokens.filter(t => t.actor.type != 'pc');
     if ((tokens?.length || 0) < 0) return;
 
     // Default to all active players.

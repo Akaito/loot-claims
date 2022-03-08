@@ -2,7 +2,10 @@ import { MODULE_CONFIG } from './config-lootClaims.js';
 import { encodeUuidForFlag } from './module-lootClaims.js';
 import { getNewCurrencyDocuments } from './currency-lootClaims.js';
 
-export async function addLoot(tokens, andCurrencyItems=true) {
+export async function addLoot(tokens, {andCurrencyItems=true, ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens)
+        tokens = tokens.filter(t => t.actor.type != 'pc');
+
     let memoizedTables = new Map;
     let missingTables = [];
 
@@ -33,9 +36,11 @@ export async function addLoot(tokens, andCurrencyItems=true) {
     }
 }
 
-export async function findLootTable(actor) {
+export async function findLootTable(actor, {ignorePlayerTokens=true}={}) {
     actor = actor?.actor || actor; // Change token to actor if needed.
     if (!actor) return undefined;
+    if (ignorePlayerTokens && actor.type == 'pc') return undefined;
+
     const betterRollTablesActive = game.modules.get('better-rolltables')?.active || false;
     // May get a name like "Compendium.scope.compendium-id.actor-id".
     //let coreName = token.actor.data.flags?.core?.sourceId;
@@ -73,7 +78,10 @@ export async function findLootTable(actor) {
     }
 }
 
-export async function addLootTable(tokens, lootTable) {
+export async function addLootTable(tokens, lootTable, {ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens)
+        tokens = tokens.filter(t => t.actor.type != 'pc');
+
     console.log('addLootTable', tokens, lootTable);
     if (!lootTable) {
         let msg = 'addLootTable(): ' + game.i18n.localize(`${MODULE_CONFIG.name}.invalidTable`);

@@ -71,7 +71,13 @@ export function log(message, ...args) {
     _consolePrint(console.log, message, ...args);
 }
 
-export async function changeSheet(tokens=canvas.tokens.controlled, newSheet=`${MODULE_CONFIG.name}.ActorSheet_dnd5e`) {
+/// @param {Array[Token5e]} [tokens=canvas.tokens.controlled]
+/// @param {String} [newSheet='loot-claims.ActorSheet_dnd5e'] Registered name of an actor sheet class.
+/// @param {Boolean} [ignorePlayerTokens=true] Even if asked to change sheets for player characters, don't.
+export async function changeSheet({tokens=canvas.tokens.controlled, newSheet=`${MODULE_CONFIG.name}.ActorSheet_dnd5e`, ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens)
+        tokens = tokens.filter(t => t.actor.type != 'pc');
+
     for (let token of tokens) {
         let priorState = token.actor?.sheet?._state;
         let priorPosition = token.actor?.sheet?.position;

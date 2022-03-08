@@ -8,7 +8,9 @@ const log = util.log; // still want this short, convenient name
 /// (Other than linked actors.)
 ///
 /// target: Actor, Token, or Item.
-export async function reset(actor, {prompt=true} = {}) {
+export async function reset(actor, {prompt=true, ignorePlayerTokens=true}={}) {
+    if (ignorePlayerTokens && actor.type == 'pc') return;
+
     if (prompt === true) {
         if (await Dialog.confirm({
             title: MODULE_CONFIG.title,
