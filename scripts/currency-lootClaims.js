@@ -26,9 +26,8 @@ export async function findCurrencyItem(currencyShortName) {
     return item || null;
 }
 
-/// Just adds items equivalent to data.data.currency object values.
-/// Does not remove existing real currency!
-export async function addCurrencyItems(tokens) {
+export async function getNewCurrencyDocuments(tokens) {
+    let docs = [];
     let memoizedCurrencies = new Map;
     for (let token of tokens) {
         let actorCurrency = token.actor.data.data.currency;
@@ -81,11 +80,35 @@ export async function addCurrencyItems(tokens) {
             }
         }
 
+        /*
         console.log(itemUpdates);
         console.log(newItems);
         await token.actor.updateEmbeddedDocuments('Item', itemUpdates);
         await Item.createDocuments(newItems, {
             parent: token.actor,
         });
+        */
+
+        docs.push({
+            parent: token.actor,
+            itemUpdates,
+            newItems,
+        });
+    }
+
+    return docs;
+}
+
+/// Just adds items equivalent to data.data.currency object values.
+/// Does not remove existing real currency!
+export async function addCurrencyItems(tokens) {
+    let docs = await getNewCurrencyDocuments(tokens);
+    //console.log('currency docs for multiple tokens', docs);
+
+    for (let docSet of docs) {
+        console.log('docSet', docSet);
+        await docSet.parent.updateEmbeddedDocuments('Item', docSet.itemUpdates);
+        //await docSet.parent.createDocuments('Item', docSet.newItems);
+        await Item.createDocuments(docSet.newItems, {parent: docSet.parent});
     }
 }

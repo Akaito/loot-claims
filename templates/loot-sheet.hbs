@@ -18,17 +18,17 @@
         <button class="give-permissions"><i class="fas fa-share-alt"></i>{{localize 'loot-claims.givePermissions'}}</button>
         <button class="distribute-loot"><i class="fas fa-coins"></i>{{localize 'loot-claims.distributeLoot'}}</button>
     </div>
-    {{/if}}
 
-    {{#if currency}}
-    <div class="currency-list">
-        <a class="add-currency-items">{{localize 'loot-claims.addCurrencyItems'}} <i class="fas fa-coins"></i></a>
-        {{#each currency as |quantity name|}}
-        {{#if (gt quantity 0)}}
-        <span data-name="{{name}}" data-quantity="{{quantity}}">{{quantity}}{{name}}</span>
+        {{#if currency}}
+        <div class="currency-list">
+            <a class="add-currency-items">{{localize 'loot-claims.addCurrencyItems'}} <i class="fas fa-coins"></i></a>
+            {{#each currency as |quantity name|}}
+            {{#if (gt quantity 0)}}
+            <span data-name="{{name}}" data-quantity="{{quantity}}">{{quantity}}{{name}}</span>
+            {{/if}}
+            {{/each}}
+        </div>
         {{/if}}
-        {{/each}}
-    </div>
     {{/if}}
 
     <table class="loot-claims-table items-list item-list inventory-list {{css}}">
