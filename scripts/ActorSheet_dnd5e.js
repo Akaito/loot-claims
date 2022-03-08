@@ -69,6 +69,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
         html.find('.add-currency-items').click(this._onAddCurrencyItems.bind(this));
         html.find('.give-permissions').click(this._onGivePermissionsClick.bind(this));
         html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
+        html.find('.show-item-card').click(this._onShowItemCard.bind(this));
 
         super.activateListeners(html);
     }
@@ -258,5 +259,16 @@ export class ActorSheet_dnd5e extends ActorSheet {
     async _onAddCurrencyItems(event) {
         event.preventDefault();
         await MODULE_CONFIG.functions.addCurrencyItems([this.token]);
+    }
+
+    async _onShowItemCard(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const itemUuid = $(element.closest('[data-item-uuid]'))?.data('item-uuid');
+        const item = await fromUuid(itemUuid);
+        console.log('_onShowItemCard(event): item:', item);
+        if (item) {
+            item.sheet.render(true);
+        }
     }
 }
