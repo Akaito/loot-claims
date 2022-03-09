@@ -70,6 +70,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
         html.find('.give-permissions').click(this._onGivePermissionsClick.bind(this));
         html.find('.distribute-loot').click(this._onDistributeLootClick.bind(this));
         html.find('.show-item-card').click(this._onShowItemCard.bind(this));
+        html.find('.hide-item-toggle').click(this._onHideItemToggle.bind(this));
 
         super.activateListeners(html);
     }
@@ -92,7 +93,13 @@ export class ActorSheet_dnd5e extends ActorSheet {
             if (item.data?.data?.weaponType == 'natural') continue;
             if (item.data?.data?.armor?.type == 'natural') continue;
             if (MODULE_CONFIG.excludedItemTypes.includes(item.type)) continue;
-            if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)) continue;
+            
+            // Hide hidden items (unless they're manually GM-toggled to be hidden, and we're a GM).
+            {
+                const hidden = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey);
+                if (hidden && (hidden != MODULE_CONFIG.HIDDEN_REASON_GM || !game.user.isGM))
+                    continue;
+            }
 
             // Get our module's flags for this item, and translate them into a form that's easier
             // for Handlebars templates to digest.
@@ -103,6 +110,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
                 img: item.img,
                 quantity: item.data.data.quantity,
                 [MODULE_CONFIG.lootedByKey]: ourFlags ? ourFlags[MODULE_CONFIG.lootedByKey] : undefined,
+                [MODULE_CONFIG.hiddenKey]: ourFlags ? ourFlags[MODULE_CONFIG.hiddenKey] : undefined,
                 //[MODULE_CONFIG.needKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimTypes) || [],
                 //[MODULE_CONFIG.greedKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.greedKey) || [],
                 //[MODULE_CONFIG.passKey]: item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.passKey) || [],
@@ -267,8 +275,18 @@ export class ActorSheet_dnd5e extends ActorSheet {
         const itemUuid = $(element.closest('[data-item-uuid]'))?.data('item-uuid');
         const item = await fromUuid(itemUuid);
         console.log('_onShowItemCard(event): item:', item);
-        if (item) {
-            item.sheet.render(true);
-        }
+        if (!item) return;
+
+        item.sheet.render(true);
+    }
+
+    async _onHideItemToggle(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const itemUuid = $(element.closest('[data-item-uuid]'))?.data('item-uuid');
+        const item = await fromUuid(itemUuid);
+        if (!item) return;
+
+        await MODULE_CONFIG.functions.toggleManualItemHide(item);
     }
 }

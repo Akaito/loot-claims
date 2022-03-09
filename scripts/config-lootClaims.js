@@ -1,5 +1,5 @@
 import { reset } from './module-lootClaims.js';
-import { changeSheet } from './util-lootClaims.js';
+import { changeSheet, toggleManualItemHide } from './util-lootClaims.js';
 import { addLoot, findLootTable, addLootTable } from './lootTables-lootClaims.js';
 import { distributeLoot, givePermission } from './lootTaking-lootClaims.js';
 import { addCurrencyItems, findCurrencyItem } from './currency-lootClaims.js';
@@ -59,6 +59,12 @@ export const MODULE_CONFIG = {
 
         /// Revert changes made by loot-claims.
         reset,
+
+        /// GM override to hide an item that's otherwise available for looting.
+        /// Useful for when you suddenly realize something like "Tail Attack"
+        /// wasn't marked as a natural weapon, and so players can (1) read its
+        /// sheet, and (2) claim it for looting.
+        toggleManualItemHide,
     },
 
     messageTypes: {
@@ -79,6 +85,9 @@ export const MODULE_CONFIG = {
         'Assistant GM',
         'Game Master',
     ],
+
+    HIDDEN_REASON_BROKEN: 'broken',
+    HIDDEN_REASON_GM:      'gm',
 
     /// Caution: If this has too small a range relative to the number of claimants
     /// for any given item, you can get a loop of attempts to create a non-tied roll.

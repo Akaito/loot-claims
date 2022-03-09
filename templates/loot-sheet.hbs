@@ -29,7 +29,7 @@
             {{/each}}
         </div>
         {{/if}}
-    {{/if}}
+    {{/if}} <!-- /if isGM -->
 
     <table class="loot-claims-table items-list item-list inventory-list {{css}}">
         <tr>
@@ -39,20 +39,38 @@
             <!-- <th>{{localize 'loot-claims.pass'}}</th> -->
         </tr>
 
-        <!-- {each currencyClaims -->
-
-        <!-- {log 'sheet render | about to each-claims. we are:'}{log .} -->
+        {{!-- {{log 'sheet render | about to each-claims. we are:'}}{{log .}} --}}
         {{#each claims }}
-            <tr class="item {{#if lootedBy}}looted{{/if}}" data-item-uuid="{{uuid}}">
+            {{!-- {{log .}} --}}
+            <tr class="item {{#if lootedBy}}looted{{/if}} {{#if hidden}}hidden{{/if}}" data-item-uuid="{{uuid}}">
                 <td class="item-brief">
+                    {{#if ../isGM}}
+                    <div class="item-gm-controls">
+                        <span>
+                            <a class="hide-item-toggle">
+                                {{#if (not hidden)}}
+                                    <i class="fas fa-eye" title="{{localize 'loot-claims.visibleClickToHide'}}"></i>
+                                {{else if (eq hidden CONFIG.HIDDEN_REASON_GM)}} {{!-- never true? --}}
+                                    <i class="fas fa-eye-low-vision"></i>
+                                {{else}}
+                                    <i class="far fa-eye-slash" title="{{localize 'loot-claims.hiddenClickToUnhide'}}"></i>
+                                {{/if}}
+                            </a>
+                        </span>
+                    </div>
+                    {{/if}}
                     <!-- <div class="item-image" aria-label="{{name}}" style="background-image: url('{{img}}')"></div> -->
-                    <a class="show-item-card">
-                        <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>
-                        <div class="item-name">
-                            {{~name~}}
-                            {{~#if quantity~}}&nbsp;({{~quantity~}}){{~/if~}}
-                        </div>
-                    </a>
+                    <span>
+                        {{#if (or ../isGM (and (not hidden) (not lootedBy)))}}<a class="show-item-card">{{/if}}
+                            <img class="item-image" aria-label="{{name}}" src="{{img}}"></img>
+                            <div class="item-name">
+                                {{~#if lootedBy~}}<s>{{~/if~}}
+                                {{~name~}}
+                                {{~#if quantity~}}&nbsp;({{~quantity~}}){{~/if~}}
+                                {{~#if lootedBy~}}</s>{{~/if~}}
+                            </div>
+                        {{#if (or ../isGM (and (not hidden) (not lootedBy)))}}</a>{{/if}}
+                    </span>
                 </td>
 
                 <td class="player-claims" data-claim-type="need">

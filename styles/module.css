@@ -79,6 +79,11 @@ This still lets the table contents slide up above the table, visible above the h
     border-style: none;
 }
 
+.loot-claims-table .item-gm-controls {
+    margin-left:  0.2em;
+    margin-right: 0.2em;
+}
+
 .loot-claims-table .player-claims {
     justify-content: center;
     align-items: center;
@@ -97,7 +102,8 @@ This still lets the table contents slide up above the table, visible above the h
     margin: 0 auto;
 }
 
-.loot-claims-table .looted {
+.loot-claims-table .looted,
+.loot-claims-table .hidden {
     /* future: don't hide, but show winner of loot instead
     display: none; 
     */

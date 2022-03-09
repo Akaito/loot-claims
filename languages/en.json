@@ -22,6 +22,9 @@
     "loot-claims.currency-gp": "Gold (gp)",
     "loot-claims.currency-pp": "Platinum (pp)",
 
+    "loot-claims.visibleClickToHide": "Visible.  Click to hide.",
+    "loot-claims.hiddenClickToUnhide": "Hidden.  Click to un-hide.",
+
     "loot-claims.badClaimantUuid": "Claimant declared with UUID [{uuid}].  No such token/actor.",
     "loot-claims.confirmResetMessage": "Reset all claimed loot?",
     "loot-claims.invalidTable": "Invalid or missing table.",

@@ -60,6 +60,7 @@ async function _handleClaimRequest(message, userSenderId) {
     // Don't allow changing claims after item has already been looted.
     //log('already looted?', item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey));
     if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.lootedByKey)) return;
+    if (item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey)?.length > 0) return;
 
     let claims = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.claimsKey) || [];
     let claimsChanged = false;

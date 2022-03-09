@@ -1,4 +1,5 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
+import { iamResponsibleGM } from './socket-lootClaims.js';
 
 /// Pass to an array's `.filter()` to unique-ify it.
 ///
@@ -104,4 +105,18 @@ export async function changeSheet({tokens=canvas.tokens.controlled, newSheet=`${
             }
         }
     }
+}
+
+export async function toggleManualItemHide(item) {
+    if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+    if (!iamResponsibleGM()) {
+        ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
+        return;
+    }
+
+    const hidden = item.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey);
+    // If already hidden, but not by manual GM intervention, don't unhide it manually, either.
+    if (hidden && ((hidden?.length || 0) > 0) && hidden != MODULE_CONFIG.HIDDEN_REASON_GM) return;
+
+    item.setFlag(MODULE_CONFIG.name, MODULE_CONFIG.hiddenKey, hidden == MODULE_CONFIG.HIDDEN_REASON_GM ? null : MODULE_CONFIG.HIDDEN_REASON_GM);
 }

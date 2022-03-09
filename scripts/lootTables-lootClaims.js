@@ -235,7 +235,7 @@ async function getDocSetViaBetterTables(token, realTable) {
                     //id: actorItemUnbroken.id,
                     flags: {
                         [MODULE_CONFIG.name]: {
-                            [MODULE_CONFIG.hiddenKey]: 'broken', // TODO: Use some thought-out value.
+                            [MODULE_CONFIG.hiddenKey]: MODULE_CONFIG.HIDDEN_REASON_BROKEN,
                         },
                     },
                 });
