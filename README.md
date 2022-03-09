@@ -86,10 +86,7 @@ This is currently unused, but could be neat; for showing players where they got 
   **A:** Someday, if there's interest!  I'm aiming to shape this one so it's not hard to support other systems.  But it's not there yet.  Just getting it to do the basic thing I want first.
 
 ## TODO
-- [ ] Currency.  :(
-- [ ] Bug: If a loot table adds an item that already exists, it increases its quantity.  Reset Loot doesn't restore the quantity to what it originally was.
-- [ ] Use libWrapper.
-- [ ] Badge on claimants showing looted quantity.
+(See https://github.com/Akaito/loot-claims/issues)
 - [ ] Test distributing loot from a linked actor.
 - [ ] Replaceable functions where they're system-specific.
       Set them in MODULE_CONFIG.functions, and call them from there.  Others can replace them.
