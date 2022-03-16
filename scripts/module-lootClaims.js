@@ -1,83 +1,90 @@
 import { MODULE_CONFIG } from './config-lootClaims.js';
 import { iamResponsibleGM } from './socket-lootClaims.js';
 import { ActorSheet_dnd5e } from './ActorSheet_dnd5e.js';
-import { handleSocket, handleSocketGm } from './socket-lootClaims.js';
+import { handleSocketNonGm, handleSocketGm } from './socket-lootClaims.js';
 import * as util from './util-lootClaims.js';
 const log = util.log; // still want this short, convenient name
 
-/// Try using this like `LootClaims.reset(canvas.scene.tokens)` to reset everything in a scene.
-/// (Other than linked actors.)
-///
-/// target: Actor, Token, or Item.
-export async function reset(actor, {prompt=true, ignorePlayerTokens=true}={}) {
-    if (!game.user.isGM) { ui.notifications.error("Only GM players can distribute loot."); return; }
+/**
+ * Try using this like `LootClaims.reset(canvas.scene.tokens)` to reset everything in a scene.
+ * (Other than linked actors.)
+ * 
+ * @param {[Actor|Token]} actors
+ * @param {object} [options={prompt=true, ignorePlayerTokens=true}]
+ */
+export async function reset(actors, options={prompt:true, ignorePlayerTokens:true}) {
+    if (!game.user.isGM) {
+        ui.notifications.error("Only GM players can distribute loot.");
+        return;
+    }
     if (!iamResponsibleGM()) {
         ui.notifications.error(game.i18n.localize('loot-claims.responsibleGmOnly'));
         return;
     }
 
-    if (ignorePlayerTokens && actor.type == 'pc') return;
-
-    if (prompt === true) {
+    // Check for user confirmation, if checking was requested.
+    if (options.prompt) {
         if (await Dialog.confirm({
             title: MODULE_CONFIG.title,
             // TODO: Give more context.  Like one token, scene of tokens, number of tokens, etc.
             content: game.i18n.localize(`${MODULE_CONFIG.name}.confirmResetMessage`),
             defaultYes: true,
             rejectClose: false,
-        }) === true) {
-            reset(actor, {prompt:false});
+        }) !== true) {
+            return;
         }
-        return;
+    }
+
+    if (!Array.isArray(actors))
+        actors = [actors];
+    // Ensure we get token actors from tokens.
+    actors = actors.map(a => a?.actor || a);
+
+    // Don't loot player tokens (unless told to permit it).
+    // dnd5e: This is probably only effective for the dnd5e system, and coincidentally some others.
+    if (options.ignorePlayerTokens) {
+        actors = actors.filter(actor =>
+            actor.hasPlayerOwner
+            || actor?.actor?.type != 'pc' && actor?.type != 'pc'
+        );
     }
 
     // TODO: Update all at once, instead of one at a time.
-    if (Array.isArray(actor)) {
-        for (let a of actor) {
-            await reset(a, {prompt:false});
-        }
-        return;
-    }
     // Janky check to see if we've been given a Map.
-    if (Array.isArray(actor?.contents)) {
+    if (Array.isArray(actors?.contents)) {
         // TODO: Update them all at once.
-        for (let a of actor) {
+        for (let a of actors) {
             await reset(a, {prompt:false});
         }
         return;
     }
-    actor = actor?.actor || actor; // In case we were given a token.
 
-    // Skip players' characters.
-    if (actor.hasPlayerOwner) {
-        ui.notifications.info(`((${MODULE_CONFIG.title}: Loot reset skipped player-owned character ${actor.name}.))`);
-        return;
-    }
+    for (let actor of actors) {
+        let items = actor?.items;
+        if (!items) {
+            ui.notifications.error(`((${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.))`);
+            log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand (has no .items):", actor);
+            return;
+        }
 
-    let items = actor?.items;
-    if (!items) {
-        ui.notifications.error(`((${MODULE_CONFIG.name}: Found no target to reset.  See console for what was attempted.))`);
-        log(MODULE_CONFIG.name, "was asked to reset this thing it doesn't understand (has no .items):", actor);
-        return;
-    }
-
-    let toBeDeleted = [];
-    let updates = [];
-    for (let item of items) {
-        //log('should attempt reset on', item, item.name, item.data?.flags);
-        const ourFlags = item.data?.flags[MODULE_CONFIG.name];
-        if (ourFlags) {
-            if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
-                toBeDeleted.push(item.id);
-            }
-            else {
-                // Clear our module's flags from the item to "reset" it.
-                updates.push({_id: item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+        let toBeDeleted = [];
+        let updates = [];
+        for (let item of items) {
+            //log('should attempt reset on', item, item.name, item.data?.flags);
+            const ourFlags = item.data?.flags[MODULE_CONFIG.name];
+            if (ourFlags) {
+                if (ourFlags[MODULE_CONFIG.generatedFromKey]) {
+                    toBeDeleted.push(item.id);
+                }
+                else {
+                    // Clear our module's flags from the item to "reset" it.
+                    updates.push({_id: item.id, [`flags.${MODULE_CONFIG.name}`]: null});
+                }
             }
         }
+        await actor.updateEmbeddedDocuments('Item', updates);
+        await actor.deleteEmbeddedDocuments('Item', toBeDeleted);
     }
-    await actor.updateEmbeddedDocuments('Item', updates);
-    await actor.deleteEmbeddedDocuments('Item', toBeDeleted);
 }
 
 /// We encode because otherwise a uuid, with periods here-and-there in it,
@@ -133,7 +140,7 @@ Hooks.once('ready', () => {
     if (game.user.isGM)
         socket.on(MODULE_CONFIG.socket, handleSocketGm);
     else
-        socket.on(MODULE_CONFIG.socket, handleSocket);
+        socket.on(MODULE_CONFIG.socket, handleSocketNonGm);
 
     // Just testing our format/localize helper.
     //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));

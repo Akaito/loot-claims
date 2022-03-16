@@ -1,3 +1,5 @@
+// @ts-check
+
 import { MODULE_CONFIG } from './config-lootClaims.js';
 import { ClaimantClaim } from './ActorSheet_dnd5e.js';
 import * as util from './util-lootClaims.js';
@@ -16,6 +18,10 @@ export function iamResponsibleGM() {
         whoisResponsibleGM().id == game.user.id;
 }
 
+/**
+ * @param {object} message
+ * @param {string} userSenderId 
+ */
 export async function handleSocketGm(message, userSenderId) {
     //log('handleSocketGm()');
     log('Got a socket event from', userSenderId, message);
@@ -29,7 +35,11 @@ export async function handleSocketGm(message, userSenderId) {
     }
 }
 
-export async function handleSocket(message, senderUserId) {
+/**
+ * @param {object} message
+ * @param {string} userSenderId 
+ */
+export async function handleSocketNonGm(message, userSenderId) {
     /*
     log('handleSocket() (non-GM)');
     log("IT'S WORKING!");
@@ -46,6 +56,10 @@ export async function handleSocket(message, senderUserId) {
 }
 
 
+/**
+ * @param {object} message
+ * @param {string} userSenderId 
+ */
 async function _handleClaimRequest(message, userSenderId) {
     log('_handleClaimRequest()');
     const {claimType, claimantUuids, itemUuid} = message;
