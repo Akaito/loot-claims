@@ -42,7 +42,7 @@
       "label": "Currency",
       "system": "dnd5e",
       "path": "./packs/currency-dnd5e.db",
-      "entity": "Item"
+      "type": "Item"
     }
   ],
   "languages": [
