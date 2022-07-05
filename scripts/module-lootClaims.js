@@ -138,9 +138,9 @@ Hooks.once('ready', () => {
     //log('ready');
 
     if (game.user.isGM)
-        socket.on(MODULE_CONFIG.socket, handleSocketGm);
+        game.socket.on(MODULE_CONFIG.socket, handleSocketGm);
     else
-        socket.on(MODULE_CONFIG.socket, handleSocketNonGm);
+        game.socket.on(MODULE_CONFIG.socket, handleSocketNonGm);
 
     // Just testing our format/localize helper.
     //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));
