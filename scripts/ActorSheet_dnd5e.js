@@ -88,7 +88,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
         // Add claims data in a different layout for the sake of Handlebars templating.
         data.claims = {};
-        for (let item of this.actor.items) {
+        for (let item of (await this.actor).items) {
             // dnd5e: skip "natural" weapons, spells, features, etc.
             if (item.data?.data?.weaponType == 'natural') continue;
             if (item.data?.data?.armor?.type == 'natural') continue;
@@ -143,14 +143,14 @@ export class ActorSheet_dnd5e extends ActorSheet {
         }
 
         // deprecating
-        if (Object.values(this.actor.data?.data?.currency).reduce((a,b) => a+b) > 0)
-            data.currency = this.actor.data.data.currency;
+        if (Object.values((await this.actor).data?.data?.currency).reduce((a,b) => a+b) > 0)
+            data.currency = (await this.actor).data.data.currency;
         else
             data.currency = null;
 
         // new, fake items way
-        const currency = this.actor.data?.data?.currency ?? {}; // dnd5e
-        data.currencyItems = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) ?? {};
+        const currency = (await this.actor).data?.data?.currency ?? {}; // dnd5e
+        data.currencyItems = (await this.actor).getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) ?? {};
         for (let [name,quantity] of Object.entries(currency)) {
             if (data.currencyItems[name]) continue;
             mergeObject(data.currencyItems, {
@@ -163,7 +163,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
             });
         }
 
-        data.currencyClaims = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
+        data.currencyClaims = (await this.actor).getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
         if (!data.currencyPseudoItems) data.currencyPseudoItems = [];
         for (let [name,quantity] of (Object.entries(currency))) {
             if (Object.keys(data.currencyClaims)?.length > 0 && data.currencyClaims.find(cpi => cpi.name == name)) continue;
@@ -175,7 +175,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
             });
         }
 
-        data.currencyPseudoItems = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) || [];
+        data.currencyPseudoItems = (await this.actor).getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyPseudoItemsKey) || [];
         for (let [name,quantity] of (Object.entries(currency))) { // dnd5e
             if (data.currencyPseudoItems.find(cpi => cpi.name == name)) continue;
             data.currencyPseudoItems.push({
@@ -184,7 +184,7 @@ export class ActorSheet_dnd5e extends ActorSheet {
                 icon: '<i class="fas fa-coins"></i>',
             });
         }
-        //data.currencyClaims = this.actor.getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
+        //data.currencyClaims = (await this.actor).getFlag(MODULE_CONFIG.name, MODULE_CONFIG.currencyClaimsKey) ?? {};
 
         //log('--- END getData()');
         //log('CLAIMS laid out for hbs', data.claims);
@@ -196,8 +196,8 @@ export class ActorSheet_dnd5e extends ActorSheet {
         event.preventDefault();
         const element = event.currentTarget;
         const itemUuid = element.closest('.item').dataset.itemUuid;
-        //let item = this.actor.getOwnedItem(itemId);
-        //let item = this.actor.getEmbeddedDocument('Item', itemId, {strict:false});
+        //let item = (await this.actor).getOwnedItem(itemId);
+        //let item = (await this.actor).getEmbeddedDocument('Item', itemId, {strict:false});
         let item = await fromUuid(itemUuid);
         // TODO: FUTURE: Don't use flags, since they're stored in the DB.  Use transient memory.
 
@@ -236,18 +236,18 @@ export class ActorSheet_dnd5e extends ActorSheet {
 
     async _onGivePermissionsClick(event) {
         event.preventDefault();
-        await MODULE_CONFIG.functions.givePermission([this.token]);
+        await MODULE_CONFIG.functions.givePermission([await this.token]);
     }
 
     async _onDistributeLootClick(event) {
         event.preventDefault();
         //const element = event.currentTarget;
-        await MODULE_CONFIG.functions.distributeLoot(this.actor);
+        await MODULE_CONFIG.functions.distributeLoot(await this.actor);
     }
 
     async _onResetLootClick(event) {
         event.preventDefault();
-        await MODULE_CONFIG.functions.reset(this.actor);
+        await MODULE_CONFIG.functions.reset(await this.actor);
     }
 
     async _onAddLootTableClick(event) {
@@ -261,12 +261,12 @@ export class ActorSheet_dnd5e extends ActorSheet {
             return;
         }
 
-        await MODULE_CONFIG.functions.addLootTable([this.token], table);
+        await MODULE_CONFIG.functions.addLootTable([await this.token], table);
     }
 
     async _onAddCurrencyItems(event) {
         event.preventDefault();
-        await MODULE_CONFIG.functions.addCurrencyItems([this.token]);
+        await MODULE_CONFIG.functions.addCurrencyItems([await this.token]);
     }
 
     async _onShowItemCard(event) {

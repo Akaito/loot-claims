@@ -31,7 +31,7 @@ export async function getNewCurrencyDocuments(tokens) {
     let docs = [];
     let memoizedCurrencies = new Map;
     for (let token of tokens) {
-        let actorCurrency = token.actor.data.data.currency;
+        let actorCurrency = (await token.actor).data.data.currency;
         let currencyShortStrings = Object.keys(actorCurrency);
         if (!currencyShortStrings) return; // TODO: Better handling of missing currency data (dnd5e or otherwise).
 
@@ -51,7 +51,7 @@ export async function getNewCurrencyDocuments(tokens) {
             if (!item) continue; // TODO: Error message on missing currency item.
             console.log('using currency item:', item);
 
-            const existingItem = token.actor.getEmbeddedCollection('Item').find(actorItem => actorItem.type == item.type && actorItem.name == item.name);
+            const existingItem = (await token.actor).getEmbeddedCollection('Item').find(actorItem => actorItem.type == item.type && actorItem.name == item.name);
             // TODO: Sanity-check data structure of existing item first.  Do that sort of thing in a few places in this module.
             if (existingItem) {
                 console.log('CURRENCY ALREADY EXISTS');
@@ -68,7 +68,7 @@ export async function getNewCurrencyDocuments(tokens) {
                     ...item,
                     data: {
                         // Expect item's quantity is 1.  But just in case someone's doing something funky.
-                        quantity: Number(item.data.quantity || 1) * Number(actorCurrency[short]),
+                        quantity: Number(item.system.quantity || 1) * Number(actorCurrency[short]),
                     },
                     flags: {
                         [MODULE_CONFIG.name]: {
@@ -84,14 +84,14 @@ export async function getNewCurrencyDocuments(tokens) {
         /*
         console.log(itemUpdates);
         console.log(newItems);
-        await token.actor.updateEmbeddedDocuments('Item', itemUpdates);
+        await (await token.actor).updateEmbeddedDocuments('Item', itemUpdates);
         await Item.createDocuments(newItems, {
-            parent: token.actor,
+            parent: (await token.actor),
         });
         */
 
         docs.push({
-            parent: token.actor,
+            parent: (await token.actor),
             itemUpdates,
             newItems,
         });
@@ -116,8 +116,9 @@ export async function addCurrencyItems(
         return;
     }
 
-    if (ignorePlayerTokens)
+    if (ignorePlayerTokens) {
         tokens = tokens.filter(t => t.actor.type != 'pc');
+    }
 
     let docs = await getNewCurrencyDocuments(tokens);
     //console.log('currency docs for multiple tokens', docs);
