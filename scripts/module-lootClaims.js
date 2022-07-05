@@ -99,7 +99,7 @@ export function decodeUuidFromFlag(flag) {
 }
 
 Hooks.once('init', async function() {
-    log(`init`);
+    //log(`init`);
     //libWrapper.register('loot-claims');
 
     window.LootClaims = MODULE_CONFIG.functions;
@@ -131,11 +131,11 @@ Hooks.once('init', async function() {
     */
 
     preloadHandlebarsTemplates();
-    log('init done');
+    //log('init done');
 });
 
 Hooks.once('ready', () => {
-    log('ready');
+    //log('ready');
 
     if (game.user.isGM)
         socket.on(MODULE_CONFIG.socket, handleSocketGm);
@@ -145,7 +145,7 @@ Hooks.once('ready', () => {
     // Just testing our format/localize helper.
     //console.log(...util.floc('myfootest', {arg: 2, blarg: 4}, 2*8, [1,2,3,4]));
 
-    log('ready done');
+    //log('ready done');
 });
 
 
